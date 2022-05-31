@@ -40,6 +40,13 @@ namespace RainDrops.Sprites
                     phScore -= acidDrop.PH;
                     sprite.IsRemoved = true;
                 }
+                if (this.IsCupCollision(sprite) && sprite is AlkRainDrop)
+                {
+                    var alkDrop = sprite as AlkRainDrop;
+                    dropsCaught++;
+                    phScore -= alkDrop.PH;
+                    sprite.IsRemoved = true;
+                }
 
 
             }

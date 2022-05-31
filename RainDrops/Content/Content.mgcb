@@ -37,7 +37,7 @@
 /processorParam:TextureFormat=Color
 /build:Cups/emptyCup.png
 
-#begin Drops/acidDropL.png
+#begin Drops/acidDrop.png
 /importer:TextureImporter
 /processor:TextureProcessor
 /processorParam:ColorKeyColor=255,0,255,255
@@ -47,9 +47,9 @@
 /processorParam:ResizeToPowerOfTwo=False
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
-/build:Drops/acidDropL.png
+/build:Drops/acidDrop.png
 
-#begin Drops/rainDropL.png
+#begin Drops/alkDrop.png
 /importer:TextureImporter
 /processor:TextureProcessor
 /processorParam:ColorKeyColor=255,0,255,255
@@ -59,7 +59,19 @@
 /processorParam:ResizeToPowerOfTwo=False
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
-/build:Drops/rainDropL.png
+/build:Drops/alkDrop.png
+
+#begin Drops/rainDrop.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:Drops/rainDrop.png
 
 #begin Fonts/scoreFont.spritefont
 /importer:FontDescriptionImporter

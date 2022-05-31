@@ -15,7 +15,7 @@ namespace RainDrops.Sprites
         protected Drop(GraphicsDevice graphics, Texture2D texture, float rotation, float scale, float layer) : base(graphics, texture, rotation, scale, layer)
         {
             Position = new Vector2(RainDropsGame.Random.Next((int)(texture.Width * scale / 2), (int)(RainDropsGame.ScreenWidth - texture.Width * scale / 2)), -texture.Height * scale / 2);
-            DropSpeed = RainDropsGame.Random.Next(150, 250);
+            DropSpeed = RainDropsGame.Random.Next(200, 220);
         }
 
         public override void Update(GameTime gameTime, List<Sprite> sprites)
@@ -25,5 +25,6 @@ namespace RainDrops.Sprites
             if (Rect.Bottom >= RainDropsGame.ScreenHeight)
                 IsRemoved = true;
         }
+        
     }
 }

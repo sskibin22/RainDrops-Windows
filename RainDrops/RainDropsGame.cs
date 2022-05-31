@@ -4,6 +4,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using RainDrops.Sprites;
+using RainDrops.Tools;
 
 namespace RainDrops
 {
@@ -24,15 +25,21 @@ namespace RainDrops
         private Texture2D cupTexture;
         private Texture2D rainDropTexture;
         private Texture2D acidDropTexture;
+        private Texture2D alkDropTexture;
 
         private Cup cup;
         private List<Sprite> sprites;
 
         private float timer = 0;
-        private float timer2 = 0;
+
         private bool hasStarted = false;
-        private float rainDropRate = 0.30f;
-        private float acidDropRate = 0.35f;
+
+        private float dropSpawnRate = 0.10f;
+
+        private double rainDropChance = 10;
+        private double acidDropChance = 45;
+        private double alkDropChance = 45;
+
         private KeyboardState currKeyState;
         private KeyboardState previousKeyState;
 
@@ -63,8 +70,9 @@ namespace RainDrops
             font = Content.Load<SpriteFont>("Fonts/scoreFont");
 
             cupTexture = Content.Load<Texture2D>("Cups/emptyCup");
-            rainDropTexture = Content.Load<Texture2D>("Drops/rainDropL");
-            acidDropTexture = Content.Load<Texture2D>("Drops/acidDropL");
+            rainDropTexture = Content.Load<Texture2D>("Drops/rainDrop");
+            acidDropTexture = Content.Load<Texture2D>("Drops/acidDrop");
+            alkDropTexture = Content.Load<Texture2D>("Drops/alkDrop");
 
             Restart();
 
@@ -87,6 +95,7 @@ namespace RainDrops
             cupTexture.Dispose();
             rainDropTexture.Dispose();
             acidDropTexture.Dispose();
+            alkDropTexture.Dispose();
             base.UnloadContent();
         }
 
@@ -113,23 +122,22 @@ namespace RainDrops
                     return;
                 //increment game timer based on total seconds elapsed
                 timer += (float)gameTime.ElapsedGameTime.TotalSeconds;
-                timer2 += (float)gameTime.ElapsedGameTime.TotalSeconds;
                 //Update each sprite in sprites List
                 foreach (var sprite in sprites)
                 {  
                     sprite.Update(gameTime, sprites); 
                 }
-                //if timer is greater than rain drop rate, reset timer, spawn a new rain drop
-                if(timer > rainDropRate)
+                //if timer is greater than drop rate, reset timer, spawn a new drop
+                if (timer > dropSpawnRate)
                 {
                     timer = 0f;
-                    sprites.Add(new RainDrop(graphics.GraphicsDevice, rainDropTexture, 0f, 0.75f, 0f));
+                    WeightedRandomExecutor wre = new WeightedRandomExecutor(
+                    new WeightedRandomParam(() => sprites.Add(new RainDrop(graphics.GraphicsDevice, rainDropTexture, 0f, 0.75f, 0f)), rainDropChance),
+                    new WeightedRandomParam(() => sprites.Add(new AcidRainDrop(graphics.GraphicsDevice, acidDropTexture, 0f, 0.75f, 0f)), acidDropChance),   
+                    new WeightedRandomParam(() => sprites.Add(new AlkRainDrop(graphics.GraphicsDevice, alkDropTexture, 0f, 0.75f, 0f)), alkDropChance)); 
+                    wre.Execute();
                 }
-                if (timer2 > acidDropRate)
-                {
-                    timer2 = 0f;
-                    sprites.Add(new AcidRainDrop(graphics.GraphicsDevice, acidDropTexture, 0f, 0.75f, 0f));
-                }
+
                 //check if any sprite.IsRemoved property has been set to true. If so remove from sprites List
                 for (int i = 0; i < sprites.Count; i++)
                 {
