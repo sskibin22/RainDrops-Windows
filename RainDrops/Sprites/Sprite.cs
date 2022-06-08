@@ -81,17 +81,5 @@ namespace RainDrops.Sprites
                 }
             }
         }
-
-        #region Collision
-        protected bool IsCupCollision(Sprite sprite)
-        {
-            return sprite.Rect.Bottom > this.Rect.Top + 15 &&
-                sprite.Rect.Bottom < this.Rect.Top + 30 &&
-                (sprite.Position.X) >= (this.Position.X - ((this.texture.Width * this.scale) / 2)) &&
-                (sprite.Position.X) <= (this.Position.X + ((this.texture.Width * this.scale) / 2));
-
-        }
-
-        #endregion
     }
 }
