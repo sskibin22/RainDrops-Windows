@@ -17,7 +17,7 @@ namespace RainDrops.Sprites
         public float phScore = 70f;
         public Cup(GraphicsDevice graphics, Texture2D texture, float rotation, float scale, float layer) : base(graphics, texture, rotation, scale, layer)
         {
-            Position = new Vector2(RainDropsGame.ScreenWidth / 2, RainDropsGame.ScreenHeight - texture.Height / 2);
+            Position = new Vector2(RainDropsGame.ScreenWidth / 2, RainDropsGame.ScreenHeight - (texture.Height / 2) - RainDropsGame.phBarHeight);
         }
 
         public override void Update(GameTime gameTime, List<Sprite> sprites)

@@ -8,12 +8,14 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="MonoGame.Content.Builder.Task" Version="3.8.0.1641" />
-    <PackageReference Include="MonoGame.Framework.DesktopGL" Version="3.8.0.1641" />
+    <Compile Remove="Content\Drops\dropsSS\**" />
+    <EmbeddedResource Remove="Content\Drops\dropsSS\**" />
+    <None Remove="Content\Drops\dropsSS\**" />
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Content\" />
+    <PackageReference Include="MonoGame.Content.Builder.Task" Version="3.8.0.1641" />
+    <PackageReference Include="MonoGame.Framework.DesktopGL" Version="3.8.0.1641" />
   </ItemGroup>
 
 </Project>

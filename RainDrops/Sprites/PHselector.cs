@@ -14,7 +14,7 @@ namespace RainDrops.Sprites
         public PHselector(Texture2D texture, float rotation, float scale, float layer) : base(texture, rotation, scale, layer)
         {
             phSelected = 7.0f;
-            Position = new Vector2(RainDropsGame.ScreenWidth / 2, RainDropsGame.phBarHeight / 2);
+            Position = new Vector2(RainDropsGame.ScreenWidth / 2, RainDropsGame.ScreenHeight - (RainDropsGame.phBarHeight / 2));
         }
     }
 }

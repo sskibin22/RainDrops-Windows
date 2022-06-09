@@ -36,27 +36,27 @@ namespace RainDrops
         private Drop currDrop;
         private List<Sprite> sprites;
 
-        private float[,] xRegions = new float[2,4];
-        int reg = 0;
+        private List<float> dropCols;
+        int numDropCols;
+        int randCol;
+        int randDropSpeed;
 
         public static int dropCount = 0;
 
         private float timer = 0;
-        private float regTimer = 0;
-
+        
         private bool hasStarted = false;
 
         private float dropLayerDepth = 0.1f;
 
-        private float dropSpawnRate = 200f;
-        private float regionShiftRate = 400f;
+        private float dropSpawnRate = 275f;
 
-        private int dropSpeedMin = 100;
-        private int dropSpeedMax = 250;
+        private int dropSpeedMin = 150;
+        private int dropSpeedMax = 300;
 
-        private double rainDropChance = 20;
-        private double acidDropChance = 40;
-        private double alkDropChance = 40;
+        private double rainDropChance = 10;
+        private double acidDropChance = 45;
+        private double alkDropChance = 45;
 
         private KeyboardState currKeyState;
         private KeyboardState previousKeyState;
@@ -76,6 +76,8 @@ namespace RainDrops
             graphics.PreferredBackBufferHeight = ScreenHeight;
             graphics.ApplyChanges();
 
+            dropCols = new List<float>();
+
             base.Initialize();
         }
 
@@ -94,16 +96,24 @@ namespace RainDrops
             acidDropTexture = Content.Load<Texture2D>("Drops/acidDrop");
             alkDropTexture = Content.Load<Texture2D>("Drops/alkDrop");
 
-            float dropBounds = ScreenWidth - ((rainDropTexture.Width * dropScale / 2) * 2);
-            float regionLength = dropBounds / 4f;
-            xRegions[0, 0] = rainDropTexture.Width * dropScale / 2;
-            xRegions[1, 0] = regionLength;
-            xRegions[0, 1] = regionLength;
-            xRegions[1, 1] = regionLength * 2;
-            xRegions[0, 2] = regionLength * 2;
-            xRegions[1, 2] = regionLength * 3;
-            xRegions[0, 3] = regionLength * 3;
-            xRegions[1, 3] = ScreenWidth - (rainDropTexture.Width * dropScale / 2);
+            
+            numDropCols = (int)(ScreenWidth / (rainDropTexture.Width*dropScale));
+            float total = 0;
+            for (int i = 0; i < numDropCols; i++)
+            {
+                if(i == 0) 
+                {
+                    total += ((rainDropTexture.Width*dropScale) / 2) + 10;
+                     
+                }
+                else
+                {
+                    total += rainDropTexture.Width*dropScale;
+                }
+                dropCols.Add(total);
+                
+            }
+            
 
             Restart();
 
@@ -159,7 +169,6 @@ namespace RainDrops
                     return;
                 //increment game timer based on total seconds elapsed
                 timer += (float)gameTime.ElapsedGameTime.TotalMilliseconds;
-                regTimer += (float)gameTime.ElapsedGameTime.TotalMilliseconds;
                 //Update each sprite in sprites List
                 foreach (var sprite in sprites)
                 {  
@@ -169,34 +178,53 @@ namespace RainDrops
                 if (timer > dropSpawnRate)
                 {
                     timer = 0f;
+                    randCol = Random.Next(0, numDropCols);
+                    randDropSpeed = Random.Next(dropSpeedMin, dropSpeedMax);
+                    foreach (var sprite in sprites)
+                    {
+                        if(sprite is Drop)
+                        {
+                            var drop = (Drop)sprite;
+                            if (drop.Position.X == dropCols[randCol])
+                            {
+                                if (drop.Position.Y - drop.Rect.Height/2 < rainDropTexture.Height * dropScale)
+                                {
+                                    randCol = Random.Next(0, numDropCols);
+                                }
+                                if (drop.Position.X == dropCols[randCol] && randDropSpeed > drop.DropSpeed)
+                                {
+                                    randDropSpeed = Random.Next(dropSpeedMin, (int)drop.DropSpeed);
+                                }
+                                
+                            }
+                            
+
+                        }
+                    }
                     WeightedRandomExecutor wre = new WeightedRandomExecutor(
                     new WeightedRandomParam(() => currDrop = new RainDrop(graphics.GraphicsDevice, rainDropTexture, 0f, dropScale, dropLayerDepth)
                     {
                         //Position = new Vector2(Random.Next((int)(rainDropTexture.Width * dropScale / 2), (int)(ScreenWidth - rainDropTexture.Width * dropScale / 2)), -rainDropTexture.Height * dropScale / 2),
-                        Position = new Vector2(Random.Next((int)xRegions[0,reg], (int)xRegions[1,reg]), -rainDropTexture.Height * dropScale / 2),
-                        DropSpeed = Random.Next(dropSpeedMin, dropSpeedMax),
+                        Position = new Vector2(dropCols[randCol], -rainDropTexture.Height * dropScale / 2),
+                        DropSpeed = randDropSpeed,
                     }, rainDropChance),
                     new WeightedRandomParam(() => currDrop = new AcidRainDrop(graphics.GraphicsDevice, acidDropTexture, 0f, dropScale, dropLayerDepth)
                     {
                         //Position = new Vector2(Random.Next((int)(acidDropTexture.Width * dropScale / 2), (int)(ScreenWidth - acidDropTexture.Width * dropScale / 2)), -acidDropTexture.Height * dropScale / 2),
-                        Position = new Vector2(Random.Next((int)xRegions[0, reg], (int)xRegions[1, reg]), -acidDropTexture.Height * dropScale / 2),
-                        DropSpeed = Random.Next(dropSpeedMin, dropSpeedMax),
+                        Position = new Vector2(dropCols[randCol], -acidDropTexture.Height * dropScale / 2),
+                        DropSpeed = randDropSpeed,
                     }, acidDropChance),   
                     new WeightedRandomParam(() => currDrop = new AlkRainDrop(graphics.GraphicsDevice, alkDropTexture, 0f, dropScale, dropLayerDepth)
                     {
                         //Position = new Vector2(Random.Next((int)(alkDropTexture.Width * dropScale / 2), (int)(ScreenWidth - alkDropTexture.Width * dropScale / 2)), -alkDropTexture.Height * dropScale / 2),
-                        Position = new Vector2(Random.Next((int)xRegions[0, reg], (int)xRegions[1, reg]), -alkDropTexture.Height * dropScale / 2),
-                        DropSpeed = Random.Next(dropSpeedMin, dropSpeedMax),
+                        Position = new Vector2(dropCols[randCol], -alkDropTexture.Height * dropScale / 2),
+                        DropSpeed = randDropSpeed,
                     }, alkDropChance)); 
                     wre.Execute();
                     sprites.Add(currDrop);
                     dropCount++;                   
                 }
-                if (regTimer > regionShiftRate)
-                {
-                    regTimer = 0f;
-                    reg = Random.Next(0,4);
-                }
+                
 
                 //check if any sprite.IsRemoved property has been set to true. If so remove from sprites List
                 for (int i = 0; i < sprites.Count; i++)
@@ -230,7 +258,7 @@ namespace RainDrops
             //Draw background
             spriteBatch.Draw(bg, new Rectangle(0, 0, ScreenWidth, ScreenHeight), null, Color.White, 0f, Vector2.Zero, SpriteEffects.None, 0f);
             //Draw ph bar
-            spriteBatch.Draw(phBar, new Rectangle(0, 0, ScreenWidth, phBarHeight), null, Color.White, 0f, Vector2.Zero, SpriteEffects.None, 0.2f);
+            spriteBatch.Draw(phBar, new Rectangle(0, ScreenHeight - phBarHeight, ScreenWidth, phBarHeight), null, Color.White, 0f, Vector2.Zero, SpriteEffects.None, 0.2f);
 
             //Draw all sprites and show their hitboxes if showHitBox is set to true
             foreach (var sprite in sprites)
