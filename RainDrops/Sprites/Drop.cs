@@ -15,17 +15,20 @@ namespace RainDrops.Sprites
         public float DropSpeed { get; set; }
 
         private float timer;
+        private float velocity;
         private bool switchScale;
         protected Drop(GraphicsDevice graphics, Texture2D texture, float rotation, float scale, float layer) : base(graphics, texture, rotation, scale, layer)
         {
             //Position = new Vector2(RainDropsGame.Random.Next((int)(texture.Width * scale / 2), (int)(RainDropsGame.ScreenWidth - texture.Width * scale / 2)), -texture.Height * scale / 2);
             //DropSpeed = RainDropsGame.Random.Next(200, 220);
+            //velocity = DropSpeed;
         }
 
         public override void Update(GameTime gameTime, List<Sprite> sprites)
         {
             timer += (float)gameTime.ElapsedGameTime.TotalMilliseconds;
-            Position.Y += Convert.ToInt32(DropSpeed * (float)gameTime.ElapsedGameTime.TotalSeconds);
+            velocity += (DropSpeed * (float)gameTime.ElapsedGameTime.TotalMilliseconds);
+            Position.Y += Convert.ToInt32(velocity);
             if (this.PH == 0 || this.PH == 14)
             {
                 if (timer > 10f)

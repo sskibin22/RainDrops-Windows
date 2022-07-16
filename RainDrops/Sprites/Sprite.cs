@@ -13,6 +13,7 @@ namespace RainDrops.Sprites
     {
         protected Texture2D rectTexture;
         protected Texture2D texture;
+        protected SpriteFont font;
         protected float rotation;
         protected float scale;
         protected float layer;

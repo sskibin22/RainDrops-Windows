@@ -11,6 +11,7 @@ namespace RainDrops.Sprites
 {
     internal class Cup : Sprite
     {
+        private int frameCount = 0;
         public int dropsCaught = 0;
         public int acidDropsCaught = 0;
         public int alkDropsCaught = 0;
@@ -30,6 +31,8 @@ namespace RainDrops.Sprites
 
                 if (IsCupCollision(sprite) && sprite is RainDrop)
                 {
+                    frameCount++;
+                    texture = RainDropsGame.rainCupTextures[frameCount];
                     var rainDrop = sprite as RainDrop;
                     dropsCaught++;
                     sprite.IsRemoved = true;
@@ -37,7 +40,7 @@ namespace RainDrops.Sprites
                 if (IsCupCollision(sprite) && sprite is AcidRainDrop)
                 {
                     var acidDrop = sprite as AcidRainDrop;
-                    dropsCaught++;
+                    //dropsCaught++;
                     acidDropsCaught++;
                     phScore += acidDrop.Value;
                     sprite.IsRemoved = true;
@@ -46,7 +49,7 @@ namespace RainDrops.Sprites
                 if (IsCupCollision(sprite) && sprite is AlkRainDrop)
                 {
                     var alkDrop = sprite as AlkRainDrop;
-                    dropsCaught++;
+                    //dropsCaught++;
                     alkDropsCaught++;
                     phScore += alkDrop.Value;
                     sprite.IsRemoved = true;

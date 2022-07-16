@@ -28,6 +28,7 @@ namespace RainDrops
         private Texture2D rainDropTexture;
         private Texture2D acidDropTexture;
         private Texture2D alkDropTexture;
+        public static List<Texture2D> rainCupTextures;
 
         public static float dropScale = 0.75f;
 
@@ -39,7 +40,7 @@ namespace RainDrops
         private List<float> dropCols;
         int numDropCols;
         int randCol;
-        int randDropSpeed;
+        float randDropSpeed;
 
         public static int dropCount = 0;
 
@@ -49,10 +50,10 @@ namespace RainDrops
 
         private float dropLayerDepth = 0.1f;
 
-        private float dropSpawnRate = 275f;
+        private float dropSpawnRate = 200f;
 
-        private int dropSpeedMin = 150;
-        private int dropSpeedMax = 300;
+        private double dropSpeedMin = 0.001;
+        private double dropSpeedMax = 0.005;
 
         private double rainDropChance = 10;
         private double acidDropChance = 45;
@@ -92,6 +93,22 @@ namespace RainDrops
             font = Content.Load<SpriteFont>("Fonts/scoreFont");
 
             cupTexture = Content.Load<Texture2D>("Cups/emptyCup");
+
+            rainCupTextures = new List<Texture2D>();
+            for(int i = 0; i < 31; i++)
+            {
+                if(i < 10)
+                {
+                    rainCupTextures.Add(Content.Load<Texture2D>($"Cups/RainCupFrames/cup0{i}"));
+                }
+                else
+                {
+                    rainCupTextures.Add(Content.Load<Texture2D>($"Cups/RainCupFrames/cup{i}"));
+                }
+                
+            }
+            
+
             rainDropTexture = Content.Load<Texture2D>("Drops/rainDrop");
             acidDropTexture = Content.Load<Texture2D>("Drops/acidDrop");
             alkDropTexture = Content.Load<Texture2D>("Drops/alkDrop");
@@ -124,7 +141,7 @@ namespace RainDrops
         {
             dropCount = 0;
             phSelect = new PHselector(phSelectTexture, 0f, 0.7f, 0.4f);
-            cup = new Cup(graphics.GraphicsDevice, cupTexture, 0f, 1f, 0.9f); 
+            cup = new Cup(graphics.GraphicsDevice, rainCupTextures[0], 0f, 1f, 0.9f); //cupTexture
 
             sprites = new List<Sprite>()
             {
@@ -179,7 +196,7 @@ namespace RainDrops
                 {
                     timer = 0f;
                     randCol = Random.Next(0, numDropCols);
-                    randDropSpeed = Random.Next(dropSpeedMin, dropSpeedMax);
+                    randDropSpeed = (float)(Random.NextDouble() * (dropSpeedMax - dropSpeedMin) + dropSpeedMin);
                     foreach (var sprite in sprites)
                     {
                         if(sprite is Drop)
@@ -191,16 +208,18 @@ namespace RainDrops
                                 {
                                     randCol = Random.Next(0, numDropCols);
                                 }
-                                if (drop.Position.X == dropCols[randCol] && randDropSpeed > drop.DropSpeed)
-                                {
-                                    randDropSpeed = Random.Next(dropSpeedMin, (int)drop.DropSpeed);
-                                }
+                                //if (drop.Position.X == dropCols[randCol] && randDropSpeed > drop.DropSpeed)
+                                //{
+                                //    randDropSpeed = (float)(Random.NextDouble() * ((double)drop.DropSpeed - dropSpeedMin) + dropSpeedMin);
+                                //    //randDropSpeed = Random.Next(dropSpeedMin, (int)drop.DropSpeed);
+                                //}
                                 
                             }
                             
 
                         }
                     }
+                    System.Diagnostics.Debug.WriteLine(randDropSpeed);
                     WeightedRandomExecutor wre = new WeightedRandomExecutor(
                     new WeightedRandomParam(() => currDrop = new RainDrop(graphics.GraphicsDevice, rainDropTexture, 0f, dropScale, dropLayerDepth)
                     {
