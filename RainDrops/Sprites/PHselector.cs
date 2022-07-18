@@ -10,11 +10,16 @@ namespace RainDrops.Sprites
 {
     internal class PHselector : Sprite
     {
-        public float phSelected;
+        public int phSelected;
         public PHselector(Texture2D texture, float rotation, float scale, float layer) : base(texture, rotation, scale, layer)
         {
-            phSelected = 7.0f;
+            phSelected = 7;
             Position = new Vector2(RainDropsGame.ScreenWidth / 2, RainDropsGame.ScreenHeight - (RainDropsGame.phBarHeight / 2));
+        }
+
+        public override void Update(GameTime gameTime, List<Sprite> sprites)
+        {
+            Position.X = RainDropsGame.numPositions[phSelected];
         }
     }
 }

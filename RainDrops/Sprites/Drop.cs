@@ -11,7 +11,6 @@ namespace RainDrops.Sprites
     internal abstract class Drop : Sprite
     {
         public int PH { get; protected set; }
-        public float Value { get; protected set; }
         public float DropSpeed { get; set; }
 
         private float timer;
@@ -56,7 +55,17 @@ namespace RainDrops.Sprites
                 }
             }
             if (Rect.Bottom >= RainDropsGame.ScreenHeight)
+            {
                 IsRemoved = true;
+                if(this.PH == 7)
+                {
+                    RainDropsGame.lifeCount--;
+                    if(RainDropsGame.lifeCount >= 0)
+                        RainDropsGame.lives[RainDropsGame.lifeCount].IsRemoved = true;
+                }
+            }
+                
+                
         }
        
         protected bool IsDropCollision(Sprite sprite)
