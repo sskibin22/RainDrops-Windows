@@ -16,14 +16,14 @@ namespace RainDrops.Sprites
         private float timer;
         private float velocity;
         private bool switchScale;
-        protected Drop(GraphicsDevice graphics, Texture2D texture, float rotation, float scale, float layer) : base(graphics, texture, rotation, scale, layer)
+        protected Drop(Texture2D texture, float rotation, float scale, float layer) : base(texture, rotation, scale, layer)
         {
             //Position = new Vector2(RainDropsGame.Random.Next((int)(texture.Width * scale / 2), (int)(RainDropsGame.ScreenWidth - texture.Width * scale / 2)), -texture.Height * scale / 2);
             //DropSpeed = RainDropsGame.Random.Next(200, 220);
             //velocity = DropSpeed;
         }
 
-        public override void Update(GameTime gameTime, List<Sprite> sprites)
+        public override void Update(GameTime gameTime)
         {
             timer += (float)gameTime.ElapsedGameTime.TotalMilliseconds;
             velocity += (DropSpeed * (float)gameTime.ElapsedGameTime.TotalMilliseconds);
@@ -59,9 +59,9 @@ namespace RainDrops.Sprites
                 IsRemoved = true;
                 if(this.PH == 7)
                 {
-                    RainDropsGame.lifeCount--;
-                    if(RainDropsGame.lifeCount >= 0)
-                        RainDropsGame.lives[RainDropsGame.lifeCount].IsRemoved = true;
+                    States.GameState.lifeCount--;
+                    if(States.GameState.lifeCount >= 0)
+                        States.GameState.lives[States.GameState.lifeCount].IsRemoved = true;
                 }
             }
                 

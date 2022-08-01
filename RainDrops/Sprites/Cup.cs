@@ -15,15 +15,15 @@ namespace RainDrops.Sprites
         public int dropsCaught = 0;
         public int acidDropsCaught = 0;
         public int alkDropsCaught = 0;
-        public Cup(GraphicsDevice graphics, Texture2D texture, float rotation, float scale, float layer) : base(graphics, texture, rotation, scale, layer)
+        public Cup(Texture2D texture, float rotation, float scale, float layer) : base(texture, rotation, scale, layer)
         {
-            Position = new Vector2(RainDropsGame.ScreenWidth / 2, RainDropsGame.ScreenHeight - (texture.Height / 2) - RainDropsGame.phBarHeight);
+            Position = new Vector2(RainDropsGame.ScreenWidth / 2, RainDropsGame.ScreenHeight - (texture.Height / 2) - States.GameState.phBarHeight);
         }
 
-        public override void Update(GameTime gameTime, List<Sprite> sprites)
+        public override void Update(GameTime gameTime)
         {
             Move();
-            foreach(var sprite in sprites)
+            foreach(var sprite in States.GameState.sprites)
             {
                 if(sprite is Cup)
                     continue;
@@ -31,7 +31,7 @@ namespace RainDrops.Sprites
                 if (IsCupCollision(sprite) && sprite is RainDrop)
                 {
                     frameCount++;
-                    texture = RainDropsGame.rainCupTextures[frameCount];
+                    texture = States.GameState.rainCupTextures[frameCount];
                     var rainDrop = sprite as RainDrop;
                     dropsCaught++;
                     sprite.IsRemoved = true;
@@ -75,22 +75,22 @@ namespace RainDrops.Sprites
             switch (drop.PH)
             {
                 case 14:
-                    RainDropsGame.phSelect.phSelected += 3;
-                    if (RainDropsGame.phSelect.phSelected > 14)
-                        RainDropsGame.phSelect.phSelected = 14;
+                    States.GameState.phSelect.phSelected += 3;
+                    if (States.GameState.phSelect.phSelected > 14)
+                        States.GameState.phSelect.phSelected = 14;
                     break;
                 case 11:
-                    if(RainDropsGame.phSelect.phSelected != 14)
-                        RainDropsGame.phSelect.phSelected += 1;                  
+                    if(States.GameState.phSelect.phSelected != 14)
+                        States.GameState.phSelect.phSelected += 1;                  
                     break;
                 case 3:
-                    if (RainDropsGame.phSelect.phSelected != 0)
-                        RainDropsGame.phSelect.phSelected -= 1;
+                    if (States.GameState.phSelect.phSelected != 0)
+                        States.GameState.phSelect.phSelected -= 1;
                     break;
                 case 0:
-                    RainDropsGame.phSelect.phSelected -= 3;
-                    if (RainDropsGame.phSelect.phSelected < 0)
-                        RainDropsGame.phSelect.phSelected = 0;
+                    States.GameState.phSelect.phSelected -= 3;
+                    if (States.GameState.phSelect.phSelected < 0)
+                        States.GameState.phSelect.phSelected = 0;
                     break;
                 default:
                     break;
