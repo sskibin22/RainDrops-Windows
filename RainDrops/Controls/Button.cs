@@ -45,11 +45,11 @@ namespace RainDrops.Controls
         }
         public override void Draw(GameTime gameTime, SpriteBatch spriteBatch)
         {
-            var color = Color.White;
+            var color = Color.LawnGreen;
 
             if (_isHovering)
             {
-                color = Color.Gray;
+                color = Color.LimeGreen;
             }
 
             spriteBatch.Draw(_texture, Position, null, color, 0f, Origin, 1f, SpriteEffects.None, Layer);

@@ -3,6 +3,7 @@ using System.Text;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using RainDrops.Managers;
 using RainDrops.Sprites;
 using RainDrops.States;
 using RainDrops.Tools;
@@ -16,6 +17,8 @@ namespace RainDrops
 
         private State _currentState;
         private State? _nextState;
+
+        public static LevelManager levelManager;
 
         public static Random Random = new();
 
@@ -31,11 +34,11 @@ namespace RainDrops
             IsMouseVisible = true;
         }
         protected override void Initialize()
-        {
+        {            
             graphics.PreferredBackBufferWidth = ScreenWidth;
             graphics.PreferredBackBufferHeight = ScreenHeight;
             graphics.ApplyChanges();
-
+            
             base.Initialize();
         }
 
@@ -43,10 +46,11 @@ namespace RainDrops
         {
             spriteBatch = new SpriteBatch(GraphicsDevice);
 
+            levelManager = new LevelManager();
+
             _currentState = new MainMenuState(this, Content);
             _currentState.LoadContent();
             _nextState = null;
-            
 
             base.LoadContent();
         }

@@ -1,5 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using RainDrops.States;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,7 +17,7 @@ namespace RainDrops.Sprites
         private float timer;
         private float velocity;
         private bool switchScale;
-        protected Drop(Texture2D texture, float rotation, float scale, float layer) : base(texture, rotation, scale, layer)
+        protected Drop(Texture2D texture) : base(texture)
         {
             //Position = new Vector2(RainDropsGame.Random.Next((int)(texture.Width * scale / 2), (int)(RainDropsGame.ScreenWidth - texture.Width * scale / 2)), -texture.Height * scale / 2);
             //DropSpeed = RainDropsGame.Random.Next(200, 220);
@@ -27,7 +28,7 @@ namespace RainDrops.Sprites
         {
             timer += (float)gameTime.ElapsedGameTime.TotalMilliseconds;
             velocity += (DropSpeed * (float)gameTime.ElapsedGameTime.TotalMilliseconds);
-            Position.Y += Convert.ToInt32(velocity);
+            position.Y += Convert.ToInt32(velocity);
             if (this.PH == 0 || this.PH == 14)
             {
                 if (timer > 10f)
@@ -59,15 +60,20 @@ namespace RainDrops.Sprites
                 IsRemoved = true;
                 if(this.PH == 7)
                 {
-                    States.GameState.lifeCount--;
-                    if(States.GameState.lifeCount >= 0)
-                        States.GameState.lives[States.GameState.lifeCount].IsRemoved = true;
+                    GameState.lifeCount--;
+                    if(GameState.lifeCount >= 0)
+                        GameState.lives[GameState.lifeCount].IsRemoved = true;
                 }
-            }
-                
-                
+            }      
         }
-       
+        public bool IsCupCollision(Cup cup)
+        {
+            return Rect.Bottom > cup.Rect.Top + 15 &&
+                Rect.Bottom < cup.Rect.Top + 30 &&
+                (Position.X) >= (cup.Position.X - ((cup.Rect.Width * cup.Scale) / 2)) &&
+                (Position.X) <= (cup.Position.X + ((cup.Rect.Width * cup.Scale) / 2));
+
+        }
         protected bool IsDropCollision(Sprite sprite)
         {
             return this.Position.Y + this.Rect.Height/2 > sprite.Position.Y - sprite.Rect.Height/2 &&

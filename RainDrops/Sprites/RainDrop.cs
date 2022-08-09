@@ -10,7 +10,7 @@ namespace RainDrops.Sprites
 {
     internal class RainDrop : Drop
     {
-        public RainDrop(Texture2D texture, float rotation, float scale, float layer) : base(texture, rotation, scale, layer)
+        public RainDrop(Texture2D texture) : base(texture)
         {
             PH = 7;
         }

@@ -9,7 +9,7 @@ namespace RainDrops.Sprites
 {
     internal class LifeIndicator : Sprite
     {
-        public LifeIndicator(Texture2D texture, float rotation, float scale, float layer) : base(texture, rotation, scale, layer)
+        public LifeIndicator(Texture2D texture) : base(texture)
         {
         }
     }

@@ -11,7 +11,7 @@ namespace RainDrops.Sprites
     internal class PHselector : Sprite
     {
         public int phSelected;
-        public PHselector(Texture2D texture, float rotation, float scale, float layer) : base(texture, rotation, scale, layer)
+        public PHselector(Texture2D texture) : base(texture)
         {
             phSelected = 7;
             Position = new Vector2(RainDropsGame.ScreenWidth / 2, RainDropsGame.ScreenHeight - (States.GameState.phBarHeight / 2));
@@ -19,7 +19,7 @@ namespace RainDrops.Sprites
 
         public override void Update(GameTime gameTime)
         {
-            Position.X = States.GameState.numPositions[phSelected];
+            position.X = States.GameState.numPositions[phSelected];
         }
     }
 }

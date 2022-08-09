@@ -10,7 +10,7 @@ namespace RainDrops.Sprites
 {
     internal class AlkRainDrop : Drop
     {
-        public AlkRainDrop(Texture2D texture, float rotation, float scale, float layer) : base(texture, rotation, scale, layer)
+        public AlkRainDrop(Texture2D texture) : base(texture)
         {
             //WeightedRandomExecutor wre = new WeightedRandomExecutor(
             //    new WeightedRandomParam(() => { PH = 14; Value = 40f; }, 2.5), // 2.5% chance for PH to be 14

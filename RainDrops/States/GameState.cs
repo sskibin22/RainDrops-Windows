@@ -2,6 +2,7 @@
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using RainDrops.Models;
 using RainDrops.Sprites;
 using RainDrops.Tools;
 using System;
@@ -27,17 +28,26 @@ namespace RainDrops.States
         private Texture2D rainDropTexture;
         private Texture2D acidDropTexture;
         private Texture2D alkDropTexture;
-        public static List<Texture2D>? rainCupTextures;
+
+        private Dictionary<string, Animation> splashDict;
+
+        private List<Texture2D>? rainCupTextures;
+        private SplashAnimation splashAnimation;
 
         public static float dropScale = 0.75f;
 
+        public static float splashHeightMult = 1.035f;
         public static int sectionWidth;
         public static List<int> numPositions = new List<int>();
         public static PHselector? phSelect;
         public static List<LifeIndicator>? lives;
         public static int lifeCount;
-        private Cup cup;
+        public static Cup cup;
         private Drop currDrop;
+
+        public int dropsCaught;
+        public int acidDropsCaught;
+        public int alkDropsCaught;
 
         public static List<Sprite> sprites;
 
@@ -49,19 +59,32 @@ namespace RainDrops.States
         public static int dropCount = 0;
 
         private float timer = 0;
+        private float endTimer = 0;
 
         private bool hasStarted = false;
 
         private float dropLayerDepth = 0.1f;
 
-        private float dropSpawnRate = 200f;
+        //private float dropSpawnRate = 200f;
 
-        private double dropSpeedMin = 0.001;
-        private double dropSpeedMax = 0.005;
+        //private double dropSpeedMin = 0.001;
+        //private double dropSpeedMax = 0.005;
 
-        private double rainDropChance = 7.5;
-        private double acidDropChance = 46.25;
-        private double alkDropChance = 46.25;
+        //private double rainDropChance = 7.5;
+        //private double acidDropChance = 46.25;
+        //private double alkDropChance = 46.25;
+
+        private int diffCount = 0;
+
+        private int catchCount;
+        private float dropSpawnRate;
+
+        private double dropSpeedMin;
+        private double dropSpeedMax;
+
+        private double rainDropChance;
+        private double acidDropChance;
+        private double alkDropChance;
 
         private KeyboardState currKeyState;
         private KeyboardState previousKeyState;
@@ -69,8 +92,28 @@ namespace RainDrops.States
         {
         }
 
+        public void UpdateDifficulty()
+        {
+            catchCount = RainDropsGame.levelManager._catchCount;
+            dropSpawnRate = RainDropsGame.levelManager._dropSpawnRate;
+            dropSpeedMin = RainDropsGame.levelManager._dropSpeedMin;
+            dropSpeedMax = RainDropsGame.levelManager._dropSpeedMax;
+            rainDropChance = RainDropsGame.levelManager._rainDropChance;
+            acidDropChance = RainDropsGame.levelManager._acidDropChance;
+            alkDropChance = RainDropsGame.levelManager._alkDropChance;
+        }
+        public void ModifyLevelDifficulty()
+        {
+            dropSpawnRate += RainDropsGame.levelManager.dropSpawnRateMod;
+            dropSpeedMin += RainDropsGame.levelManager.dropSpeedMinMod;
+            dropSpeedMax += RainDropsGame.levelManager.dropSpeedMaxMod;
+            rainDropChance += RainDropsGame.levelManager.rainDropChanceMod;
+            acidDropChance += RainDropsGame.levelManager.acidDropChanceMod;
+            alkDropChance += RainDropsGame.levelManager.alkDropChanceMod;
+        }
         public override void LoadContent()
         {
+            UpdateDifficulty();
             dropCols = new List<float>();
 
             bg = _content.Load<Texture2D>("BackGrounds/MountainsBG");
@@ -78,9 +121,23 @@ namespace RainDrops.States
             cloudBar = _content.Load<Texture2D>("UI/rainCloudBar");
             phSelectTexture = _content.Load<Texture2D>("UI/phSelectCircle");
 
+            splashDict = new Dictionary<string, Animation>()
+            {
+                {"rainSplash", new Animation(_content.Load<Texture2D>("Animations/Splash/rainSplashSS"), 5){Scale = 1f, FrameSpeed = 60f } },
+                {"acidSplash", new Animation(_content.Load<Texture2D>("Animations/Splash/acidSplashSS"), 5){Scale = 1f, FrameSpeed = 60f } },
+                {"alkSplash", new Animation(_content.Load<Texture2D>("Animations/Splash/alkSplashSS"), 5) {Scale = 1f, FrameSpeed = 60f } }
+
+            };
+
             font = _content.Load<SpriteFont>("Fonts/scoreFont");
 
             cupTexture = _content.Load<Texture2D>("Cups/emptyCup");
+
+            splashAnimation = new SplashAnimation(splashDict)
+            {
+                Position = new Vector2(300, 300),
+                Layer = 1f
+            };
 
 
             rainCupTextures = new List<Texture2D>();
@@ -130,15 +187,30 @@ namespace RainDrops.States
 
         private void Restart()
         {
+            if(diffCount == 4)
+            {
+                RainDropsGame.levelManager.SetBaseDifficulty();
+                UpdateDifficulty();
+                diffCount = 0;
+            }
+            if(diffCount > 0)
+            {
+                ModifyLevelDifficulty();
+            }
+            endTimer = 0f;
+            splashHeightMult = 1.035f;
+            dropsCaught = 0;
+            acidDropsCaught = 0;
+            alkDropsCaught = 0;
             lifeCount = 3;
             dropCount = 0;
-            phSelect = new PHselector(phSelectTexture, 0f, 0.7f, 0.4f);
-            cup = new Cup(rainCupTextures[0], 0f, 1f, 0.9f); //cupTexture
+            phSelect = new PHselector(phSelectTexture) { Scale = 0.7f, Layer = 0.4f};
+            cup = new Cup(rainCupTextures[0]) { CupTextures = rainCupTextures, Scale = 1f, Layer = 0.9f}; //cupTexture
 
             lives = new List<LifeIndicator>() {
-                new LifeIndicator(rainDropTexture,0f, 0.5f, 0.3f){Position = new Vector2((rainDropTexture.Width*0.5f), (rainDropTexture.Height*0.5f/2)+1)},
-                new LifeIndicator(rainDropTexture,0f, 0.5f, 0.3f){Position = new Vector2(((rainDropTexture.Width*0.5f)*2)+10, (rainDropTexture.Height*0.5f/2)+1)},
-                new LifeIndicator(rainDropTexture,0f, 0.5f, 0.3f){Position = new Vector2(((rainDropTexture.Width*0.5f)*3)+20, (rainDropTexture.Height*0.5f/2)+1)}};
+                new LifeIndicator(rainDropTexture){Position = new Vector2((rainDropTexture.Width*0.5f), (rainDropTexture.Height*0.5f/2)+1), Scale = 0.5f, Layer = 0.3f},
+                new LifeIndicator(rainDropTexture){Position = new Vector2(((rainDropTexture.Width*0.5f)*2)+10, (rainDropTexture.Height*0.5f/2)+1), Scale = 0.5f, Layer = 0.3f},
+                new LifeIndicator(rainDropTexture){Position = new Vector2(((rainDropTexture.Width*0.5f)*3)+20, (rainDropTexture.Height*0.5f/2)+1), Scale = 0.5f, Layer = 0.3f}};
 
             sprites = new List<Sprite>()
             {
@@ -156,6 +228,32 @@ namespace RainDrops.States
             //TODO
         }
 
+        private void MovePHSelector(Drop drop)
+        {
+            switch (drop.PH)
+            {
+                case 14:
+                    phSelect.phSelected += 3;
+                    if (phSelect.phSelected > 14)
+                        phSelect.phSelected = 14;
+                    break;
+                case 11:
+                    if (phSelect.phSelected != 14)
+                        phSelect.phSelected += 1;
+                    break;
+                case 3:
+                    if (phSelect.phSelected != 0)
+                        phSelect.phSelected -= 1;
+                    break;
+                case 0:
+                    phSelect.phSelected -= 3;
+                    if (phSelect.phSelected < 0)
+                        phSelect.phSelected = 0;
+                    break;
+                default:
+                    break;
+            }
+        }
         public override void Update(GameTime gameTime)
         {
             KeyboardState keyState = Keyboard.GetState();
@@ -202,27 +300,84 @@ namespace RainDrops.States
                 }
                 //System.Diagnostics.Debug.WriteLine(randDropSpeed);
                 WeightedRandomExecutor wre = new WeightedRandomExecutor(
-                new WeightedRandomParam(() => currDrop = new RainDrop(rainDropTexture, 0f, dropScale, dropLayerDepth)
+                new WeightedRandomParam(() => currDrop = new RainDrop(rainDropTexture)
                 {
                     Position = new Vector2(dropCols[randCol], -rainDropTexture.Height * dropScale / 2),
                     DropSpeed = randDropSpeed,
+                    Scale = dropScale,
+                    Layer = dropLayerDepth
                 }, rainDropChance),
-                new WeightedRandomParam(() => currDrop = new AcidRainDrop(acidDropTexture, 0f, dropScale, dropLayerDepth)
+                new WeightedRandomParam(() => currDrop = new AcidRainDrop(acidDropTexture)
                 {
+
                     Position = new Vector2(dropCols[randCol], -acidDropTexture.Height * dropScale / 2),
                     DropSpeed = randDropSpeed,
+                    Scale = dropScale,
+                    Layer = dropLayerDepth
                 }, acidDropChance),
-                new WeightedRandomParam(() => currDrop = new AlkRainDrop(alkDropTexture, 0f, dropScale, dropLayerDepth)
+                new WeightedRandomParam(() => currDrop = new AlkRainDrop(alkDropTexture)
                 {
                     Position = new Vector2(dropCols[randCol], -alkDropTexture.Height * dropScale / 2),
                     DropSpeed = randDropSpeed,
-                }, alkDropChance));
+                    Scale = dropScale,
+                    Layer = dropLayerDepth
+                }, alkDropChance)); 
                 wre.Execute();
 
                 sprites.Add(currDrop);
                 dropCount++;
             }
 
+            foreach(var sprite in sprites)
+            {
+                if(sprite is Drop)
+                {
+                    var drop = (Drop)sprite;
+                    if (drop.IsCupCollision(cup) && sprite is RainDrop)
+                    {
+                        cup.UpdateFrame();
+                        var rainDrop = sprite as RainDrop;
+                        dropsCaught++;
+                        sprites.Add(new SplashAnimation(splashDict)
+                        {                           
+                            Layer = 1f,
+                            Type = "rainSplash"
+                        });
+                        splashHeightMult -= 0.0042f;
+                        sprite.IsRemoved = true;
+
+                        break;
+                    }
+                    if (drop.IsCupCollision(cup) && sprite is AcidRainDrop)
+                    {
+                        var acidDrop = sprite as AcidRainDrop;
+                        //dropsCaught++;
+                        acidDropsCaught++;
+                        sprites.Add(new SplashAnimation(splashDict)
+                        {         
+                            Layer = 1f,
+                            Type = "acidSplash"
+                        });
+                        sprite.IsRemoved = true;
+                        MovePHSelector(acidDrop);
+                        break;
+                    }
+                    if (drop.IsCupCollision(cup) && sprite is AlkRainDrop)
+                    {
+                        var alkDrop = sprite as AlkRainDrop;
+                        //dropsCaught++;
+                        alkDropsCaught++;
+                        sprites.Add(new SplashAnimation(splashDict)
+                        {
+                            Layer = 1f,
+                            Type = "alkSplash"
+                        });
+                        sprite.IsRemoved = true;
+                        MovePHSelector(alkDrop);
+                        break;
+                    }
+                }   
+            }
 
             //check if any sprite.IsRemoved property has been set to true. If so remove from sprites List
             for (int i = 0; i < sprites.Count; i++)
@@ -234,18 +389,23 @@ namespace RainDrops.States
                     sprites.RemoveAt(i);
                     i--;
                 }
-                //if Cup has caught 30 RainDrops, restart the game
-                if (sprite is Cup)
-                {
-                    if (sprite is Cup cupInstance && cupInstance.dropsCaught == 30)
-                    {
-                        Restart();
-                    }
-                }
+                
+            }
+            if (dropsCaught == catchCount)
+            {
+                RainDropsGame.levelManager.IncreaseLevel();
+                diffCount++;
+                //wait 3 seconds before restarting
+                endTimer += (float)gameTime.ElapsedGameTime.TotalMilliseconds;
+                if (endTimer > 300f)
+                    Restart();
             }
             if (lifeCount < 0)
             {
-                Restart();
+                RainDropsGame.levelManager.ResetLevel();
+                endTimer += (float)gameTime.ElapsedGameTime.TotalMilliseconds;
+                if (endTimer > 300f)
+                    Restart();
             }
         }
 
@@ -258,23 +418,16 @@ namespace RainDrops.States
             spriteBatch.Draw(phBar, new Rectangle(0, RainDropsGame.ScreenHeight - phBarHeight, RainDropsGame.ScreenWidth, phBarHeight), null, Color.White, 0f, Vector2.Zero, SpriteEffects.None, 0.2f);
             //Draw cloud bar
             spriteBatch.Draw(cloudBar, new Rectangle(0, 0, RainDropsGame.ScreenWidth, cloudBarHeight), null, Color.White, 0f, Vector2.Zero, SpriteEffects.None, 0.2f);
-
-            //spriteBatch.Draw(rainDropTexture, new Rectangle(10, 1, 22, 25), null, Color.White, 0f, Vector2.Zero, SpriteEffects.None, 0.3f);
-            //spriteBatch.Draw(rainDropTexture, new Rectangle(42, 1, 22, 25), null, Color.White, 0f, Vector2.Zero, SpriteEffects.None, 0.3f);
-            //spriteBatch.Draw(rainDropTexture, new Rectangle(74, 1, 22, 25), null, Color.White, 0f, Vector2.Zero, SpriteEffects.None, 0.3f);
-
             //Draw all sprites and show their hitboxes if showHitBox is set to true
             foreach (var sprite in sprites)
             {
                 sprite.Draw(gameTime, spriteBatch);
-                //if(sprite is Drop)
-                //{
-                //    var drop = sprite as Drop;
-                //    spriteBatch.DrawString(font, $"{drop.PH}", new Vector2(drop.Position.X-5, drop.Position.Y-5), Color.Black, 0f, Vector2.Zero, 1.2f, SpriteEffects.None, 0.11f);
-                //}
             }
+            //Draw Level
+            spriteBatch.DrawString(font, $"W: {rainDropTexture.Width}, H: {rainDropTexture.Height}", new Vector2((int)(RainDropsGame.ScreenWidth * 0.5), (int)(RainDropsGame.ScreenHeight * 0.005)), Color.Black, 0f, Vector2.Zero, 1f, SpriteEffects.None, 1f);
+            spriteBatch.DrawString(font, $"Level {RainDropsGame.levelManager.Level}", new Vector2((int)(RainDropsGame.ScreenWidth*0.9), (int)(RainDropsGame.ScreenHeight*0.005)), Color.Black, 0f, Vector2.Zero, 1f, SpriteEffects.None, 1f);
             //Draw score
-            spriteBatch.DrawString(font, $"Drops: {cup.dropsCaught}", new Vector2(cup.Position.X - 30, cup.Position.Y - 20), Color.Black, 0f, Vector2.Zero, 1f, SpriteEffects.None, 1f);
+            spriteBatch.DrawString(font, $"Drops: {dropsCaught}", new Vector2(cup.Position.X - 30, cup.Position.Y - 20), Color.Black, 0f, Vector2.Zero, 1f, SpriteEffects.None, 1f);
             spriteBatch.End();
         }
     }

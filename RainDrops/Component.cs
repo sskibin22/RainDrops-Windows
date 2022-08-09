@@ -11,6 +11,7 @@ namespace RainDrops
 {
     internal abstract class Component
     {
+        public bool IsRemoved = false;
         public abstract void Draw(GameTime gameTime, SpriteBatch spriteBatch);
 
         public abstract void Update(GameTime gameTime);
