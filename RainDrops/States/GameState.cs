@@ -393,19 +393,25 @@ namespace RainDrops.States
             }
             if (dropsCaught == catchCount)
             {
-                RainDropsGame.levelManager.IncreaseLevel();
-                diffCount++;
                 //wait 3 seconds before restarting
                 endTimer += (float)gameTime.ElapsedGameTime.TotalMilliseconds;
                 if (endTimer > 300f)
+                {
+                    RainDropsGame.levelManager.IncreaseLevel();
+                    diffCount++;
                     Restart();
+                }
+                    
             }
             if (lifeCount < 0)
             {
-                RainDropsGame.levelManager.ResetLevel();
+                //wait 3 seconds before restarting
                 endTimer += (float)gameTime.ElapsedGameTime.TotalMilliseconds;
                 if (endTimer > 300f)
+                {
+                    RainDropsGame.levelManager.ResetLevel();
                     Restart();
+                }
             }
         }
 
@@ -424,7 +430,6 @@ namespace RainDrops.States
                 sprite.Draw(gameTime, spriteBatch);
             }
             //Draw Level
-            spriteBatch.DrawString(font, $"W: {rainDropTexture.Width}, H: {rainDropTexture.Height}", new Vector2((int)(RainDropsGame.ScreenWidth * 0.5), (int)(RainDropsGame.ScreenHeight * 0.005)), Color.Black, 0f, Vector2.Zero, 1f, SpriteEffects.None, 1f);
             spriteBatch.DrawString(font, $"Level {RainDropsGame.levelManager.Level}", new Vector2((int)(RainDropsGame.ScreenWidth*0.9), (int)(RainDropsGame.ScreenHeight*0.005)), Color.Black, 0f, Vector2.Zero, 1f, SpriteEffects.None, 1f);
             //Draw score
             spriteBatch.DrawString(font, $"Drops: {dropsCaught}", new Vector2(cup.Position.X - 30, cup.Position.Y - 20), Color.Black, 0f, Vector2.Zero, 1f, SpriteEffects.None, 1f);
