@@ -44,6 +44,10 @@ namespace RainDrops.States
         public static int lifeCount;
         public static Cup cup;
         private Drop currDrop;
+        private CloudBar cloud1;
+        private CloudBar cloud2;
+        private CloudBar cloud3;
+        private CloudBar cloud4;
 
         public int dropsCaught;
         public int acidDropsCaught;
@@ -63,7 +67,7 @@ namespace RainDrops.States
 
         private bool hasStarted = false;
 
-        private float dropLayerDepth = 0.1f;
+        private float dropLayerDepth = 0.85f;
 
         //private float dropSpawnRate = 200f;
 
@@ -118,8 +122,12 @@ namespace RainDrops.States
 
             bg = _content.Load<Texture2D>("BackGrounds/MountainsBG");
             phBar = _content.Load<Texture2D>("UI/phBar");
-            cloudBar = _content.Load<Texture2D>("UI/rainCloudBar");
+            cloudBar = _content.Load<Texture2D>("Floaters/cloudBar");
             phSelectTexture = _content.Load<Texture2D>("UI/phSelectCircle");
+            cloud1 = new CloudBar(cloudBar) { Origin = Vector2.Zero, Layer = 0.9f, Speed = 0.8f, Position = new Vector2(0, 0) };
+            cloud2 = new CloudBar(cloudBar) { Origin = Vector2.Zero, Layer = 0.9f, Speed = 0.8f, Position = new Vector2(cloudBar.Width, 0) };
+            cloud3 = new CloudBar(cloudBar) { Origin = Vector2.Zero, Layer = 0.8f, Speed = 1f, Position = new Vector2(50, 20) };
+            cloud4 = new CloudBar(cloudBar) { Origin = Vector2.Zero, Layer = 0.8f, Speed = 1f, Position = new Vector2(-cloudBar.Width + 50, 20) };
 
             splashDict = new Dictionary<string, Animation>()
             {
@@ -204,13 +212,13 @@ namespace RainDrops.States
             alkDropsCaught = 0;
             lifeCount = 3;
             dropCount = 0;
-            phSelect = new PHselector(phSelectTexture) { Scale = 0.7f, Layer = 0.4f};
+            phSelect = new PHselector(phSelectTexture) { Scale = 0.7f, Layer = 0.91f};
             cup = new Cup(rainCupTextures[0]) { CupTextures = rainCupTextures, Scale = 1f, Layer = 0.9f}; //cupTexture
 
             lives = new List<LifeIndicator>() {
-                new LifeIndicator(rainDropTexture){Position = new Vector2((rainDropTexture.Width*0.5f), (rainDropTexture.Height*0.5f/2)+1), Scale = 0.5f, Layer = 0.3f},
-                new LifeIndicator(rainDropTexture){Position = new Vector2(((rainDropTexture.Width*0.5f)*2)+10, (rainDropTexture.Height*0.5f/2)+1), Scale = 0.5f, Layer = 0.3f},
-                new LifeIndicator(rainDropTexture){Position = new Vector2(((rainDropTexture.Width*0.5f)*3)+20, (rainDropTexture.Height*0.5f/2)+1), Scale = 0.5f, Layer = 0.3f}};
+                new LifeIndicator(rainDropTexture){Position = new Vector2((rainDropTexture.Width*0.5f), (rainDropTexture.Height*0.5f/2)+1), Scale = 0.5f, Layer = 1f},
+                new LifeIndicator(rainDropTexture){Position = new Vector2(((rainDropTexture.Width*0.5f)*2)+10, (rainDropTexture.Height*0.5f/2)+1), Scale = 0.5f, Layer = 1f},
+                new LifeIndicator(rainDropTexture){Position = new Vector2(((rainDropTexture.Width*0.5f)*3)+20, (rainDropTexture.Height*0.5f/2)+1), Scale = 0.5f, Layer = 1f}};
 
             sprites = new List<Sprite>()
             {
@@ -218,7 +226,11 @@ namespace RainDrops.States
                 lives[1],
                 lives[2],
                 cup,
-                phSelect
+                phSelect, 
+                cloud1,
+                cloud2, 
+                cloud3, 
+                cloud4
             };
             hasStarted = false;
         }
@@ -270,6 +282,26 @@ namespace RainDrops.States
             //if game has not started(space has not been pressed yet) return
             if (!hasStarted)
                 return;
+            cloud1.MoveLeft();
+            cloud2.MoveLeft();
+            cloud3.MoveRight();
+            cloud4.MoveRight();
+            if (cloud1.Position.X <= -cloud1.Rect.Width)
+            {
+                cloud1.Reset(cloud2, 0);
+            }
+            if (cloud2.Position.X <= -cloud2.Rect.Width)
+            {
+                cloud2.Reset(cloud1, 0);
+            }
+            if (cloud3.Position.X >= cloud3.Rect.Width)
+            {
+                cloud3.Reset(cloud4, 1);
+            }
+            if (cloud4.Position.X >= cloud4.Rect.Width)
+            {
+                cloud4.Reset(cloud3, 1);
+            }
             //increment game timer based on total seconds elapsed
             timer += (float)gameTime.ElapsedGameTime.TotalMilliseconds;
             //Update each sprite in sprites List
@@ -339,8 +371,9 @@ namespace RainDrops.States
                         var rainDrop = sprite as RainDrop;
                         dropsCaught++;
                         sprites.Add(new SplashAnimation(splashDict)
-                        {                           
-                            Layer = 1f,
+                        {
+                            Position = new Vector2(cup.Position.X, cup.Position.Y * splashHeightMult),
+                            Layer = 0.91f,
                             Type = "rainSplash"
                         });
                         splashHeightMult -= 0.0042f;
@@ -354,8 +387,9 @@ namespace RainDrops.States
                         //dropsCaught++;
                         acidDropsCaught++;
                         sprites.Add(new SplashAnimation(splashDict)
-                        {         
-                            Layer = 1f,
+                        {
+                            Position = new Vector2(cup.Position.X, cup.Position.Y * splashHeightMult),
+                            Layer = 0.91f,
                             Type = "acidSplash"
                         });
                         sprite.IsRemoved = true;
@@ -369,7 +403,8 @@ namespace RainDrops.States
                         alkDropsCaught++;
                         sprites.Add(new SplashAnimation(splashDict)
                         {
-                            Layer = 1f,
+                            Position = new Vector2(cup.Position.X, cup.Position.Y * splashHeightMult),
+                            Layer = 0.91f,
                             Type = "alkSplash"
                         });
                         sprite.IsRemoved = true;
@@ -421,7 +456,7 @@ namespace RainDrops.States
             //Draw background
             spriteBatch.Draw(bg, new Rectangle(0, 0, RainDropsGame.ScreenWidth, RainDropsGame.ScreenHeight), null, Color.White, 0f, Vector2.Zero, SpriteEffects.None, 0f);
             //Draw ph bar
-            spriteBatch.Draw(phBar, new Rectangle(0, RainDropsGame.ScreenHeight - phBarHeight, RainDropsGame.ScreenWidth, phBarHeight), null, Color.White, 0f, Vector2.Zero, SpriteEffects.None, 0.2f);
+            spriteBatch.Draw(phBar, new Rectangle(0, RainDropsGame.ScreenHeight - phBarHeight, RainDropsGame.ScreenWidth, phBarHeight), null, Color.White, 0f, Vector2.Zero, SpriteEffects.None, 0.9f);
             //Draw cloud bar
             spriteBatch.Draw(cloudBar, new Rectangle(0, 0, RainDropsGame.ScreenWidth, cloudBarHeight), null, Color.White, 0f, Vector2.Zero, SpriteEffects.None, 0.2f);
             //Draw all sprites and show their hitboxes if showHitBox is set to true

@@ -27,6 +27,8 @@ namespace RainDrops.Sprites
 
         #region Properties
         public Color Color { get; set; }
+        public float Speed;
+        public Vector2 Velocity;
         public float Rotation 
         {
             get { return rotation; }

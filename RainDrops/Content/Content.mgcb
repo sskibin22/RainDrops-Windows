@@ -493,6 +493,18 @@
 /processorParam:TextureFormat=Color
 /build:Drops/rainDrop.png
 
+#begin Floaters/cloudBar.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:Floaters/cloudBar.png
+
 #begin Fonts/scoreFont.spritefont
 /importer:FontDescriptionImporter
 /processor:FontDescriptionProcessor
