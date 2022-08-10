@@ -73,6 +73,18 @@
 /processorParam:TextureFormat=Color
 /build:BackGrounds/MountainsBG.png
 
+#begin BackGrounds/MountainsBG2.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:BackGrounds/MountainsBG2.png
+
 #begin Cups/emptyCup.png
 /importer:TextureImporter
 /processor:TextureProcessor
@@ -504,6 +516,18 @@
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
 /build:Floaters/cloudBar.png
+
+#begin Floaters/cloudBar2.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:Floaters/cloudBar2.png
 
 #begin Fonts/scoreFont.spritefont
 /importer:FontDescriptionImporter

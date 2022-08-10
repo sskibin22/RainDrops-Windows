@@ -120,9 +120,9 @@ namespace RainDrops.States
             UpdateDifficulty();
             dropCols = new List<float>();
 
-            bg = _content.Load<Texture2D>("BackGrounds/MountainsBG");
+            bg = _content.Load<Texture2D>("BackGrounds/MountainsBG2");
             phBar = _content.Load<Texture2D>("UI/phBar");
-            cloudBar = _content.Load<Texture2D>("Floaters/cloudBar");
+            cloudBar = _content.Load<Texture2D>("Floaters/cloudBar2");
             phSelectTexture = _content.Load<Texture2D>("UI/phSelectCircle");
             cloud1 = new CloudBar(cloudBar) { Origin = Vector2.Zero, Layer = 0.9f, Speed = 0.8f, Position = new Vector2(0, 0) };
             cloud2 = new CloudBar(cloudBar) { Origin = Vector2.Zero, Layer = 0.9f, Speed = 0.8f, Position = new Vector2(cloudBar.Width, 0) };
