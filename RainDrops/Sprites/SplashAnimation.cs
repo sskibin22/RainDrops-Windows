@@ -14,6 +14,7 @@ namespace RainDrops.Sprites
         public string Type { get; set; }
         public SplashAnimation(Dictionary<string, Animation> animations) : base(animations)
         {
+            Scale = 1f;
             Type = "rainSplash";
         }
 
