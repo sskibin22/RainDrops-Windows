@@ -15,15 +15,13 @@ namespace RainDrops.Models
         public float FrameSpeed { get; set; }
         public int FrameWidth { get { return Texture.Width / FrameCount; } }
         public bool IsLooping { get; set; }
-        public float Scale { get; set; }
         public Texture2D Texture { get; private set; }
         public Animation(Texture2D texture, int frameCount)
         {
             Texture = texture;
             FrameCount = frameCount;
             IsLooping = true;
-            Scale = 1f;
-            //FrameSpeed = 75f;   
+            CurrentFrame = 0; 
         }
     }
 }

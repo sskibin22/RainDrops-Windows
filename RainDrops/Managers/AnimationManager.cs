@@ -15,11 +15,11 @@ namespace RainDrops.Managers
 
         private float _timer;
         private float _timer2;
-        public Vector2 position;
         public Animation CurrentAnimation { get { return _animation; } }
         public float Layer { get; set; }
         public Vector2 Origin { get; set; }
-        //public Vector2 Position { get; set; }
+        public Vector2 Position { get; set; }
+        public float Scale { get; set; }
         public float Rotation { get; set; }
         public AnimationManager(Animation animation)
         {
@@ -28,16 +28,16 @@ namespace RainDrops.Managers
 
         public void Draw(SpriteBatch spriteBatch)
         {
-            spriteBatch.Draw(_animation.Texture, position, new Rectangle(_animation.CurrentFrame * _animation.FrameWidth, 0, _animation.FrameWidth, _animation.FrameHeight), Color.White, Rotation, Origin, _animation.Scale, SpriteEffects.None, Layer);
+            spriteBatch.Draw(_animation.Texture, Position, new Rectangle(_animation.CurrentFrame * _animation.FrameWidth, 0, _animation.FrameWidth, _animation.FrameHeight), Color.White, Rotation, Origin, Scale, SpriteEffects.None, Layer);
         }
 
-        public void Play(Animation animation)
+        public void Play(Animation animationKey)
         {
-            if (_animation == animation)
+            if (_animation == animationKey)
             {
                 return;
             }
-            _animation = animation;
+            _animation = animationKey;
             _animation.CurrentFrame = 0;
             _timer = 0;
         }
@@ -59,7 +59,14 @@ namespace RainDrops.Managers
         public void Stop()
         {
             _timer = 0f;
-            //_animation.CurrentFrame = 0;
+            _animation.CurrentFrame = 0;
+        }
+        public void NextFrame()
+        {
+            if (CurrentAnimation.CurrentFrame < CurrentAnimation.FrameCount - 1)
+            {
+                CurrentAnimation.CurrentFrame++;
+            }
         }
 
         public void Update(GameTime gameTime)

@@ -53,8 +53,8 @@ namespace RainDrops.Managers
                 //dropSpeedMinMod = 0.0002;
                 //dropSpeedMaxMod = 0.0002;
                 //rainDropChanceMod = -1;
-                //acidDropChanceMod = (-1) * rainDropChanceMod/2;
-                //alkDropChanceMod = (-1) * rainDropChanceMod/2;
+                //acidDropChanceMod = (-1) * rainDropChanceMod / 2;
+                //alkDropChanceMod = (-1) * rainDropChanceMod / 2;
 
                 _catchCount = 10;
                 _dropSpawnRate = 350f;

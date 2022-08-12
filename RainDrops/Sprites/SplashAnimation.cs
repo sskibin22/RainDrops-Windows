@@ -19,8 +19,8 @@ namespace RainDrops.Sprites
 
         public override void Update(GameTime gameTime)
         {
-            _animationManager.position.X = GameState.cup.Position.X;
-            _animationManager.position.Y = GameState.cup.Position.Y*GameState.splashHeightMult;
+            X = GameState.cup.Position.X;
+            Y = GameState.cup.Position.Y * GameState.splashHeightMult;
             _animationManager.Play(_animations[Type]);
 
             if (_animationManager.PlayOnce(gameTime))

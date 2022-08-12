@@ -17,7 +17,6 @@ namespace RainDrops.Sprites
         protected Dictionary<string, Animation> _animations;
         protected AnimationManager _animationManager;
         protected Texture2D _texture;
-        protected SpriteFont font;
         protected float rotation = 0f;
         protected float scale = 1f;
         protected float layer = 1f;
@@ -44,7 +43,14 @@ namespace RainDrops.Sprites
         public float Scale
         {
             get { return scale; }
-            set { scale = value; }
+            set 
+            { 
+                scale = value; 
+                if( _animationManager != null)
+                {
+                    _animationManager.Scale = scale;
+                }
+            }
         }
         public float Layer
         {
@@ -79,8 +85,25 @@ namespace RainDrops.Sprites
                 position = value;
                 if (_animationManager != null)
                 {
-                    _animationManager.position = position;
+                    _animationManager.Position = position;
                 }
+            }
+        }
+        public float X
+        {
+            get { return Position.X; }
+            set
+            {
+                Position = new Vector2(value, Position.Y);
+            }
+        }
+
+        public float Y
+        {
+            get { return Position.Y; }
+            set
+            {
+                Position = new Vector2(Position.X, value);
             }
         }
         public Rectangle Rect {
@@ -88,12 +111,12 @@ namespace RainDrops.Sprites
             {
                 if(_texture != null)
                 {
-                    return new Rectangle((int)(Position.X - (int)Origin.X), (int)(Position.Y - (int)Origin.Y), (int)(_texture.Width * scale), (int)(_texture.Height * scale));
+                    return new Rectangle((int)(Position.X - (int)Origin.X), (int)(Position.Y - (int)Origin.Y), (int)(_texture.Width * Scale), (int)(_texture.Height * Scale));
                 }
                 if(_animationManager != null)
                 {
                     var animation = _animations.FirstOrDefault().Value;
-                    return new Rectangle((int)Position.X - (int)Origin.X, (int)Position.Y - (int)Origin.Y, animation.FrameWidth, animation.FrameHeight);
+                    return new Rectangle((int)Position.X - (int)Origin.X, (int)Position.Y - (int)Origin.Y, (int)(animation.FrameWidth*Scale), (int)(animation.FrameHeight*Scale));
                 }
                 throw new Exception("Unknown Sprite");
             }
@@ -115,7 +138,7 @@ namespace RainDrops.Sprites
             _animations = animations;
             var animation = _animations.FirstOrDefault().Value;
             _animationManager = new AnimationManager(animation);
-            Origin = new Vector2(animation.FrameWidth / 2, animation.FrameHeight / 2);
+            Origin = new Vector2(animation.FrameWidth*Scale / 2, animation.FrameHeight*Scale / 2);
         }
         #endregion
 

@@ -1,6 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using RainDrops.Models;
 using RainDrops.States;
 using System;
 using System.Collections.Generic;
@@ -12,26 +13,30 @@ namespace RainDrops.Sprites
 {
     internal class Cup : Sprite
     {
-        public List<Texture2D> CupTextures { get; set; }
-        private int frameCount = 0;
-        public Cup(Texture2D texture) : base(texture)
+        public Cup(Dictionary<string, Animation> animations) : base(animations)
         {
-            Position = new Vector2(RainDropsGame.ScreenWidth / 2, RainDropsGame.ScreenHeight - (texture.Height / 2) - States.GameState.phBarHeight);
+            Scale = 0.9f;
+            Position = new Vector2(RainDropsGame.ScreenWidth / 2, RainDropsGame.ScreenHeight - (Rect.Height / 2) - GameState.phBarHeight);
         }
 
         public override void Update(GameTime gameTime)
         {
             Move();
         }
-        public void UpdateFrame()
+        public void IncreaseFrame()
         {
-            frameCount++;
-            _texture = CupTextures[frameCount];
+            _animationManager.NextFrame();
+        }
+        public void Reset()
+        {
+            _animationManager.Stop();
+            X = RainDropsGame.ScreenWidth / 2;
         }
         private void Move()
         {
-            position.X = Mouse.GetState().Position.X;
-            position.X = MathHelper.Clamp(Position.X, Rect.Width / 2, RainDropsGame.ScreenWidth - Rect.Width/2);
+            X = Mouse.GetState().Position.X;
+            X = MathHelper.Clamp(Position.X, Rect.Width / 2, RainDropsGame.ScreenWidth - Rect.Width/2);
+            
         }
     }
 }
