@@ -2,6 +2,7 @@
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using RainDrops.Emitters;
 using RainDrops.Models;
 using RainDrops.Sprites;
 using RainDrops.Tools;
@@ -17,6 +18,8 @@ namespace RainDrops.States
     internal class GameState : State
     {
         #region Global Static Variables
+        public static bool hasStarted = false; //start game boolean variable
+
         public static int phBarHeight = 40;
         public static float splashHeightMult = 1.035f;
 
@@ -58,8 +61,6 @@ namespace RainDrops.States
         /* Timers */
         private float timer = 0;
         private float endTimer = 0;
-        
-        private bool hasStarted = false; //start game boolean variable
         #endregion
 
         #region Sprite Fonts
@@ -82,6 +83,7 @@ namespace RainDrops.States
         #region Animation Dictionaries
         private Dictionary<string, Animation> splashDict;
         private Dictionary<string, Animation> dropDict;
+        private Dictionary<string, Animation> startDict;
         #endregion
 
         #region Animations
@@ -105,6 +107,11 @@ namespace RainDrops.States
         private CloudBar cloud2;
         private CloudBar cloud3;
         private CloudBar cloud4;
+        private CountDown countDown;
+        #endregion
+
+        #region Private Emitters
+        private RainEmitter rainEmitter;
         #endregion
 
         #region UI States
@@ -212,6 +219,14 @@ namespace RainDrops.States
                 {"alkGlow", alkGlowAnimation }
             };
 
+            startDict = new Dictionary<string, Animation>()
+            {
+                {"three", new Animation(_content.Load<Texture2D>("Floaters/THREEtext"), 3){FrameSpeed = animationFrameSpeed } },
+                {"two", new Animation(_content.Load<Texture2D>("Floaters/TWOtext"), 3){FrameSpeed = animationFrameSpeed } },
+                {"one", new Animation(_content.Load<Texture2D>("Floaters/ONEtext"), 3){FrameSpeed = animationFrameSpeed } },
+                {"rain", new Animation(_content.Load<Texture2D>("Floaters/RAINtext"), 3){FrameSpeed = animationFrameSpeed } },
+            };
+
             /* Instantiate Necessary Sprites */
             cloud1 = new CloudBar(cloudBarTexture) { Origin = Vector2.Zero, Layer = 0.9f, Speed = 0.8f, Position = new Vector2(0, 0) };
             cloud2 = new CloudBar(cloudBarTexture) { Origin = Vector2.Zero, Layer = 0.9f, Speed = 0.8f, Position = new Vector2(cloudBarTexture.Width, 0) };
@@ -225,6 +240,10 @@ namespace RainDrops.States
                 new LifeIndicator(new Dictionary<string, Animation>(){{"lifeDrop", new Animation(rainAnimTexture, 2) { FrameSpeed = animationFrameSpeed }} }){Position = new Vector2(((lifeDropAnimation.FrameWidth*0.5f)*2)+10, (lifeDropAnimation.FrameHeight*0.5f/2)+1), Scale = 0.5f, Layer = 1f},
                 new LifeIndicator(new Dictionary<string, Animation>(){{"lifeDrop", new Animation(rainAnimTexture, 2) { FrameSpeed = animationFrameSpeed }} }){Position = new Vector2(((lifeDropAnimation.FrameWidth*0.5f)*3)+20, (lifeDropAnimation.FrameHeight*0.5f/2)+1), Scale = 0.5f, Layer = 1f}
             };
+            countDown = new CountDown(startDict);
+
+            /* Instantiate Emitters */
+            rainEmitter = new RainEmitter(new Rain(_content.Load<Texture2D>("EmitterSprites/rain_1")) { Layer = 0.81f });
 
             /* Calculate Drop column positions and add to dropCols List */
             dropCols = new List<float>();
@@ -280,6 +299,7 @@ namespace RainDrops.States
             dropCount = 0;
             phSelect.Reset();
             cup.Reset();
+            countDown.Reset();
             
             foreach(LifeIndicator life in lives)
             {
@@ -315,17 +335,6 @@ namespace RainDrops.States
             KeyboardState keyState = Keyboard.GetState();
             MouseState mouseState = Mouse.GetState();
 
-            previousKeyState = currKeyState;
-            currKeyState = keyState;
-            //if ESC key is pressed exit game
-            if (keyState.IsKeyDown(Keys.Escape))
-                _game.Exit();
-            //if Space key is pressed, start game
-            if (previousKeyState.IsKeyDown(Keys.Space) && currKeyState.IsKeyUp(Keys.Space))
-                hasStarted = true;
-            //if game has not started(space has not been pressed yet) return
-            if (!hasStarted)
-                return;
             //Cloud Movement Animations
             cloud1.MoveLeft();
             cloud2.MoveLeft();
@@ -347,13 +356,36 @@ namespace RainDrops.States
             {
                 cloud4.Reset(cloud3, 1);
             }
-            //increment game timer based on total seconds elapsed
-            timer += (float)gameTime.ElapsedGameTime.TotalMilliseconds;
-            //Update each sprite in sprites List
+
+            //Update rain emitter
+            rainEmitter.Update(gameTime);
+
+            previousKeyState = currKeyState;
+            currKeyState = keyState;
+            //if ESC key is pressed exit game
+            if (keyState.IsKeyDown(Keys.Escape))
+                _game.Exit();
+            //if Space key is pressed, start game
+            if (previousKeyState.IsKeyDown(Keys.Space) && currKeyState.IsKeyUp(Keys.Space))
+            {
+                sprites.Add(countDown);
+            }
             foreach (var sprite in sprites)
             {
                 sprite.Update(gameTime);
             }
+
+            //if game has not started(space has not been pressed yet) return
+            if (!hasStarted)
+                return;
+
+            //increment game timer based on total seconds elapsed
+            timer += (float)gameTime.ElapsedGameTime.TotalMilliseconds;
+            //Update each sprite in sprites List
+            //foreach (var sprite in sprites)
+            //{
+            //    sprite.Update(gameTime);
+            //}
             //if timer is greater than drop rate, reset timer, spawn a new drop
             if (timer > dropSpawnRate)
             {
@@ -510,6 +542,8 @@ namespace RainDrops.States
             spriteBatch.Draw(bgTexture, new Rectangle(0, 0, RainDropsGame.ScreenWidth, RainDropsGame.ScreenHeight), null, Color.White, 0f, Vector2.Zero, SpriteEffects.None, 0f);
             //Draw ph bar
             spriteBatch.Draw(phBarTexture, new Rectangle(0, RainDropsGame.ScreenHeight - phBarHeight, RainDropsGame.ScreenWidth, phBarHeight), null, Color.White, 0f, Vector2.Zero, SpriteEffects.None, 0.9f);
+            //Draw rain emitter
+            rainEmitter.Draw(gameTime, spriteBatch);
             //Draw all sprites and show their hitboxes if showHitBox is set to true
             foreach (var sprite in sprites)
             {

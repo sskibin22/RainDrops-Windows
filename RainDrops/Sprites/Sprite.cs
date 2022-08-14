@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace RainDrops.Sprites
 {
-    internal abstract class Sprite : Component
+    internal abstract class Sprite : Component, ICloneable
     {
         #region Fields
         protected Dictionary<string, Animation> _animations;
@@ -26,6 +26,7 @@ namespace RainDrops.Sprites
 
         #region Properties
         public Color Color { get; set; }
+        public float Opacity { get; set; }
         public float Speed;
         public Vector2 Velocity;
         public float Rotation 
@@ -128,6 +129,7 @@ namespace RainDrops.Sprites
         {
             _texture = texture;
             Color = Color.White;
+            Opacity = 1f;
             Origin = new Vector2((texture.Width*Scale) / 2, (texture.Height*Scale) / 2);
             
         }
@@ -138,7 +140,7 @@ namespace RainDrops.Sprites
             _animations = animations;
             var animation = _animations.FirstOrDefault().Value;
             _animationManager = new AnimationManager(animation);
-            Origin = new Vector2(animation.FrameWidth*Scale / 2, animation.FrameHeight*Scale / 2);
+            Origin = new Vector2(animation.FrameWidth / 2, animation.FrameHeight / 2);
         }
         #endregion
 
@@ -151,7 +153,7 @@ namespace RainDrops.Sprites
         {
             if (_texture != null)
             {
-                spriteBatch.Draw(_texture, position, null, Color, Rotation, Origin, Scale, SpriteEffects.None, Layer);
+                spriteBatch.Draw(_texture, position, null, Color*Opacity, Rotation, Origin, Scale, SpriteEffects.None, Layer);
             }
             else if (_animationManager != null)
             {
@@ -159,6 +161,10 @@ namespace RainDrops.Sprites
             }
             else throw new Exception("insufficient parameters for Draw method");
             
+        }
+        public object Clone()
+        {
+            return this.MemberwiseClone();
         }
         #endregion
     }
