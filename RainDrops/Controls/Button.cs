@@ -13,8 +13,6 @@ namespace RainDrops.Controls
     {
         private SpriteFont _font;
         private Texture2D _texture;
-        private MouseState _currentMouse;
-        private MouseState _previousMouse;
         private bool _isHovering;
         public EventHandler Click;
         public bool Clicked { get; private set; }
@@ -64,10 +62,7 @@ namespace RainDrops.Controls
 
         public override void Update(GameTime gameTime)
         {
-            _previousMouse = _currentMouse;
-            _currentMouse = Mouse.GetState();
-
-            var mouseRectangle = new Rectangle(_currentMouse.X, _currentMouse.Y, 1, 1);
+            var mouseRectangle = new Rectangle((int)RainDropsGame.scaledMouse.X, (int)RainDropsGame.scaledMouse.Y, 1, 1);
 
             _isHovering = false;
 
@@ -75,7 +70,7 @@ namespace RainDrops.Controls
             {
                 _isHovering = true;
 
-                if (_currentMouse.LeftButton == ButtonState.Released && _previousMouse.LeftButton == ButtonState.Pressed)
+                if (RainDropsGame.mouseState.LeftButton == ButtonState.Released && RainDropsGame.prevMouseState.LeftButton == ButtonState.Pressed)
                 {
                     Click?.Invoke(this, new EventArgs());
                 }

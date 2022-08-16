@@ -29,6 +29,7 @@ namespace RainDrops.Managers
         {
             Level = 1;
             SetBaseDifficulty();
+            _catchCount = 30;
         }
 
         public void IncreaseLevel()
@@ -41,28 +42,13 @@ namespace RainDrops.Managers
 
             if (Level >= 1 && Level <= 5) 
             {
-                _catchCount = 10;
-                _dropSpawnRate = 80f;
-                _dropSpeedMin = 0.003;
-                _dropSpeedMax = 0.008;
-                _rainDropChance = 5;
-                _acidDropChance = 47.5;
-                _alkDropChance = 47.5;
-
-                dropSpawnRateMod = -10f;
-                dropSpeedMinMod = 0.0002;
-                dropSpeedMaxMod = 0.0002;
-                rainDropChanceMod = -1;
-                acidDropChanceMod = (-1) * rainDropChanceMod / 2;
-                alkDropChanceMod = (-1) * rainDropChanceMod / 2;
-
-                //_catchCount = 10;
-                //_dropSpawnRate = 350f;
-                //_dropSpeedMin = 0.001;
-                //_dropSpeedMax = 0.003;
-                //_rainDropChance = 20;
-                //_acidDropChance = 40;
-                //_alkDropChance = 40;
+                //_catchCount = 30;
+                //_dropSpawnRate = 80f;
+                //_dropSpeedMin = 0.003;
+                //_dropSpeedMax = 0.008;
+                //_rainDropChance = 5;
+                //_acidDropChance = 47.5;
+                //_alkDropChance = 47.5;
 
                 //dropSpawnRateMod = -10f;
                 //dropSpeedMinMod = 0.0002;
@@ -70,10 +56,25 @@ namespace RainDrops.Managers
                 //rainDropChanceMod = -1;
                 //acidDropChanceMod = (-1) * rainDropChanceMod / 2;
                 //alkDropChanceMod = (-1) * rainDropChanceMod / 2;
+
+                //_catchCount = 10;
+                _dropSpawnRate = 350f;
+                _dropSpeedMin = 0.001;
+                _dropSpeedMax = 0.003;
+                _rainDropChance = 20;
+                _acidDropChance = 40;
+                _alkDropChance = 40;
+
+                dropSpawnRateMod = -10f;
+                dropSpeedMinMod = 0.0002;
+                dropSpeedMaxMod = 0.0002;
+                rainDropChanceMod = -1;
+                acidDropChanceMod = (-1) * rainDropChanceMod / 2;
+                alkDropChanceMod = (-1) * rainDropChanceMod / 2;
             }
             else if (Level >= 6 && Level <= 10) 
             {
-                _catchCount = 10;
+                //_catchCount = 10;
                 _dropSpawnRate = 300f;
                 _dropSpeedMin = 0.001;
                 _dropSpeedMax = 0.004;
@@ -90,7 +91,7 @@ namespace RainDrops.Managers
             }
             else if (Level >= 11 && Level <= 15) 
             {
-                _catchCount = 15;
+                //_catchCount = 15;
                 _dropSpawnRate = 250f;
                 _dropSpeedMin = 0.001;
                 _dropSpeedMax = 0.005;
@@ -107,7 +108,7 @@ namespace RainDrops.Managers
             }
             else if (Level >= 16 && Level <= 20) 
             {
-                _catchCount = 15;
+                //_catchCount = 15;
                 _dropSpawnRate = 200f;
                 _dropSpeedMin = 0.001;
                 _dropSpeedMax = 0.006;

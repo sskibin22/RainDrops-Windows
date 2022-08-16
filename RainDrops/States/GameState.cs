@@ -20,7 +20,7 @@ namespace RainDrops.States
         #region Global Static Variables
         public static bool hasStarted = false; //start game boolean variable
 
-        public static int phBarHeight = 40;
+        public static int phBarHeight = 45;
         public static float splashHeightMult = 1.035f;
 
         public static int dropCount = 0; //Total drops on current GameState screen
@@ -37,7 +37,7 @@ namespace RainDrops.States
         private int numDropCols;
         private int randCol;
         private float randDropSpeed;
-        private float dropScale = 0.8f; //scaling multiplier for drops
+        private float dropScale = 0.9f; //scaling multiplier for drops
 
         /* Caught drop counters */
         private int dropsCaught;    //number of rain drops caught
@@ -45,7 +45,8 @@ namespace RainDrops.States
         private int alkDropsCaught;
 
         /* Game attributes */
-        private int maxDrops = 25;  //Max drop instances allowed on screen at one time
+        private int maxLives = 3;
+        private int maxDrops = 35;  //Max drop instances allowed on screen at one time
         private int diffCount = 0;  //difficulty counter for level manager
         private int catchCount; //How many drops need to be caught to win the level
         private float dropSpawnRate; //spawn rate for drops
@@ -185,7 +186,7 @@ namespace RainDrops.States
             /* Load GameState Textures */
             bgTexture = _content.Load<Texture2D>("BackGrounds/MountainsBG2");
             phBarTexture = _content.Load<Texture2D>("UI/phBar");
-            cloudBarTexture = _content.Load<Texture2D>("Floaters/cloudBar2");
+            cloudBarTexture = _content.Load<Texture2D>("Floaters/cloudBarLong");
             phSelectTexture = _content.Load<Texture2D>("UI/phSelectCircle");
             rainAnimTexture = _content.Load<Texture2D>("Drops/dropBlueSS");
             acidAnimTexture = _content.Load<Texture2D>("Drops/dropGreenSS");
@@ -233,7 +234,7 @@ namespace RainDrops.States
             cloud3 = new CloudBar(cloudBarTexture) { Origin = Vector2.Zero, Layer = 0.8f, Speed = 1f, Position = new Vector2(50, 20) };
             cloud4 = new CloudBar(cloudBarTexture) { Origin = Vector2.Zero, Layer = 0.8f, Speed = 1f, Position = new Vector2(-cloudBarTexture.Width + 50, 20) };
             phSelect = new PHselector(phSelectTexture) { Scale = 0.7f, Layer = 0.91f };
-            cup = new Cup(new Dictionary<string, Animation>() { { "standardCups", new Animation(standardCupTexture, 31) {FrameSpeed = animationFrameSpeed } } }) { Layer = 0.9f }; 
+            cup = new Cup(new Dictionary<string, Animation>() { { "standardCups", new Animation(standardCupTexture, 31) {FrameSpeed = animationFrameSpeed } } }) { Layer = 0.91f }; 
             lives = new List<LifeIndicator>()
             {
                 new LifeIndicator(new Dictionary<string, Animation>(){{"lifeDrop", new Animation(rainAnimTexture, 2) { FrameSpeed = animationFrameSpeed }} }){Position = new Vector2((lifeDropAnimation.FrameWidth*0.5f), (lifeDropAnimation.FrameHeight*0.5f/2)+1), Scale = 0.5f, Layer = 1f},
@@ -273,6 +274,31 @@ namespace RainDrops.States
             /* Load Initial Game settings */
             UpdateDifficulty(); //set initial difficulty settings
             Restart();
+        }
+        private void LevelUp()
+        {
+            /* Apply difficulty settings as needed */
+            if (diffCount == 4)
+            {
+                RainDropsGame.levelManager.SetBaseDifficulty();
+                UpdateDifficulty();
+                diffCount = 0;
+            }
+            if (diffCount > 0)
+            {
+                ModifyLevelDifficulty();
+            }
+
+            if (lifeCount < maxLives)
+            {
+                lives[lifeCount].IsRemoved = false;
+                sprites.Add(lives[lifeCount]);
+                lifeCount++;
+            }
+            
+            splashHeightMult = 1.035f;
+            dropsCaught = 0;
+            cup.Reset();
         }
         /* Restart Game back to it's original state */
         private void Restart()
@@ -512,15 +538,9 @@ namespace RainDrops.States
             /* If player catches the required number of rain drops increase level difficulty and reset game. */
             if (dropsCaught >= catchCount)
             {
-                //wait 3 seconds before restarting
-                endTimer += (float)gameTime.ElapsedGameTime.TotalMilliseconds;
-                if (endTimer > 300f)
-                {
-                    RainDropsGame.levelManager.IncreaseLevel();
-                    diffCount++;
-                    Restart();
-                }
-                    
+                RainDropsGame.levelManager.IncreaseLevel();
+                diffCount++;
+                LevelUp();
             }
             /* If player loses all live, reset difficulty and game. */
             if (lifeCount < 0)

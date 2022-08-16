@@ -88,6 +88,7 @@ namespace RainDrops.Sprites
 
         public void Reset()
         {
+            scale = 0.7f;
             phSelected = 7;
             position.X = numPositions[phSelected];
         }

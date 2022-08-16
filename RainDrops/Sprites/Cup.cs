@@ -30,11 +30,15 @@ namespace RainDrops.Sprites
         public void Reset()
         {
             _animationManager.Stop();
-            X = RainDropsGame.ScreenWidth / 2;
         }
         private void Move()
         {
-            X = Mouse.GetState().Position.X;
+            //int normX = Mouse.GetState().Position.X / RainDropsGame.ScreenWidth;
+            //int normY = Mouse.GetState().Position.Y / RainDropsGame.ScreenHeight;
+            //RainDropsGame.mousePos.X = normX * RainDropsGame.window.ClientBounds.Width;
+            //RainDropsGame.mousePos.Y = normY * RainDropsGame.window.ClientBounds.Height;
+
+            X = RainDropsGame.scaledMouse.X;
             X = MathHelper.Clamp(Position.X, Rect.Width / 2, RainDropsGame.ScreenWidth - Rect.Width/2);
             
         }
