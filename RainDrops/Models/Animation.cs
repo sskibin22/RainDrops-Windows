@@ -10,7 +10,7 @@ namespace RainDrops.Models
     internal class Animation
     {
         public int CurrentFrame { get; set; }
-        public int FrameCount { get; private set; }
+        public int FrameCount { get; set; }
         public int FrameHeight { get { return Texture.Height; } }
         public float FrameSpeed { get; set; }
         public int FrameWidth { get { return Texture.Width / FrameCount; } }

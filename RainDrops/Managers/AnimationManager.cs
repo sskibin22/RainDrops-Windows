@@ -15,12 +15,14 @@ namespace RainDrops.Managers
 
         private float _timer;
         private float _timer2;
+        private float _timer3;
         public Animation CurrentAnimation { get { return _animation; } }
         public float Layer { get; set; }
         public Vector2 Origin { get; set; }
         public Vector2 Position { get; set; }
         public float Scale { get; set; }
         public float Rotation { get; set; }
+        public Color Color { get; set; }
         public AnimationManager(Animation animation)
         {
             _animation = animation;
@@ -28,7 +30,7 @@ namespace RainDrops.Managers
 
         public void Draw(SpriteBatch spriteBatch)
         {
-            spriteBatch.Draw(_animation.Texture, Position, new Rectangle(_animation.CurrentFrame * _animation.FrameWidth, 0, _animation.FrameWidth, _animation.FrameHeight), Color.White, Rotation, Origin, Scale, SpriteEffects.None, Layer);
+            spriteBatch.Draw(_animation.Texture, Position, new Rectangle(_animation.CurrentFrame * _animation.FrameWidth, 0, _animation.FrameWidth, _animation.FrameHeight), Color, Rotation, Origin, Scale, SpriteEffects.None, Layer);
         }
 
         public void Play(Animation animationKey)
@@ -42,18 +44,53 @@ namespace RainDrops.Managers
             _timer = 0;
         }
 
-        public bool PlayOnce(GameTime gameTime)
+        public bool PlayOnce(Animation animation, GameTime gameTime)
         {
+            if(_animation != animation)
+            {
+                _animation = animation;
+                _animation.CurrentFrame = 0;
+                _timer2 = 0;
+            }
+
             _timer2 += (float)gameTime.ElapsedGameTime.TotalMilliseconds;
-            if (_timer2 > CurrentAnimation.FrameCount * CurrentAnimation.FrameSpeed)
+            if (_timer2 > _animation.FrameSpeed)
             {
-                Stop();
-                return true;
+                _timer2 = 0f;
+                _animation.CurrentFrame++;
+                if (_animation.CurrentFrame >= _animation.FrameCount)
+                {
+                    Stop();
+                    return true;
+                }  
             }
-            else
+            return false;
+        }
+        public bool PlayOnceBackwards(Animation animation, GameTime gameTime)
+        {
+            if (_animation != animation)
             {
-                return false;
+                _animation = animation;
+                _animation.CurrentFrame = _animation.FrameCount;
+                _timer3 = 0;
             }
+
+            _timer3 += (float)gameTime.ElapsedGameTime.TotalMilliseconds;
+            if (_timer3 > _animation.FrameSpeed)
+            {
+                _timer3 = 0f;
+                if (_animation.CurrentFrame > 0)
+                {
+                    _animation.CurrentFrame--;
+                }
+                else
+                {
+                    Stop();
+                    return true;
+
+                }
+            }
+            return false;
         }
 
         public void Stop()
@@ -67,6 +104,14 @@ namespace RainDrops.Managers
             {
                 CurrentAnimation.CurrentFrame++;
             }
+        }
+        public void SetAnimation(Animation animation)
+        {
+            if (_animation == animation)
+            {
+                return;
+            }
+            _animation = animation;
         }
 
         public void Update(GameTime gameTime)

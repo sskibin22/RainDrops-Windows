@@ -22,13 +22,13 @@ namespace RainDrops.Sprites
         {
             X = GameState.cup.Position.X;
             Y = GameState.cup.Position.Y * GameState.splashHeightMult;
-            _animationManager.Play(_animations[Type]);
+            //_animationManager.Play(_animations[Type]);
 
-            if (_animationManager.PlayOnce(gameTime))
+            if (_animationManager.PlayOnce(_animations[Type], gameTime))
             {
                 IsRemoved = true;
             }
-            _animationManager.Update(gameTime);
+            //_animationManager.Update(gameTime);
         }
     }
 }

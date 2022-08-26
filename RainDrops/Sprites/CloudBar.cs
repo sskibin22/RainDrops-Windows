@@ -12,6 +12,7 @@ namespace RainDrops.Sprites
     {
         public CloudBar(Texture2D texture) : base(texture)
         {
+            
         }
         public void MoveLeft()
         {

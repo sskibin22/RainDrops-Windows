@@ -17,15 +17,28 @@ namespace RainDrops.Sprites
         protected Dictionary<string, Animation> _animations;
         protected AnimationManager _animationManager;
         protected Texture2D _texture;
+        protected Dictionary<string, Texture2D> _textures;
         protected float rotation = 0f;
         protected float scale = 1f;
         protected float layer = 1f;
+        protected Color color = Color.White;
         protected Vector2 origin;
         protected Vector2 position;
         #endregion
 
         #region Properties
-        public Color Color { get; set; }
+        public Color Color 
+        {
+            get { return color; }
+            set
+            {
+                color = value;
+                if (_animationManager != null)
+                {
+                    _animationManager.Color = color;
+                }
+            }
+        }
         public float Opacity { get; set; }
         public float Speed;
         public Vector2 Velocity;
@@ -110,11 +123,11 @@ namespace RainDrops.Sprites
         public Rectangle Rect {
             get
             {
-                if(_texture != null)
+                if((_texture != null && _animationManager != null) || (_texture != null && _animationManager == null))
                 {
                     return new Rectangle((int)(Position.X - (int)Origin.X), (int)(Position.Y - (int)Origin.Y), (int)(_texture.Width * Scale), (int)(_texture.Height * Scale));
                 }
-                if(_animationManager != null)
+                else if(_texture == null && _animationManager != null)
                 {
                     var animation = _animations.FirstOrDefault().Value;
                     return new Rectangle((int)Position.X - (int)Origin.X, (int)Position.Y - (int)Origin.Y, (int)(animation.FrameWidth*Scale), (int)(animation.FrameHeight*Scale));
@@ -128,7 +141,7 @@ namespace RainDrops.Sprites
         public Sprite(Texture2D texture)
         {
             _texture = texture;
-            Color = Color.White;
+            //Color = Color.White;
             Opacity = 1f;
             Origin = new Vector2((texture.Width*Scale) / 2, (texture.Height*Scale) / 2);
             
@@ -136,11 +149,23 @@ namespace RainDrops.Sprites
         public Sprite(Dictionary<string, Animation> animations)
         {
             _texture = null;
-            Color = Color.White;
+            //Color = Color.White;
             _animations = animations;
             var animation = _animations.FirstOrDefault().Value;
             _animationManager = new AnimationManager(animation);
+            _animationManager.Color = Color;
             Origin = new Vector2(animation.FrameWidth / 2, animation.FrameHeight / 2);
+        }
+        public Sprite(Dictionary<string, Texture2D> textures, Dictionary<string, Animation> animations)
+        {
+            _textures = textures;
+            _texture = _textures.FirstOrDefault().Value;
+            Opacity = 1f;
+            _animations = animations;
+            var animation = _animations.FirstOrDefault().Value;
+            _animationManager = new AnimationManager(animation);
+            _animationManager.Color = Color;
+            Origin = new Vector2(_texture.Width*Scale / 2, _texture.Height*Scale / 2);
         }
         #endregion
 
@@ -151,13 +176,18 @@ namespace RainDrops.Sprites
 
         public override void Draw(GameTime gameTime, SpriteBatch spriteBatch)
         {
-            if (_texture != null)
+            if (_texture != null && _animationManager == null)
             {
                 spriteBatch.Draw(_texture, position, null, Color*Opacity, Rotation, Origin, Scale, SpriteEffects.None, Layer);
             }
-            else if (_animationManager != null)
+            else if (_texture == null && _animationManager != null)
+            {
+                _animationManager.Draw(spriteBatch); 
+            }
+            else if(_texture != null && _animationManager != null)
             {
                 _animationManager.Draw(spriteBatch);
+                spriteBatch.Draw(_texture, position, null, Color.White * Opacity, Rotation, Origin, Scale, SpriteEffects.None, Layer + 0.01f);
             }
             else throw new Exception("insufficient parameters for Draw method");
             

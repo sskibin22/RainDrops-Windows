@@ -45,7 +45,7 @@ namespace RainDrops.Sprites
             {
                 IsRemoved = true;
                 GameState.dropCount--;
-                if(this.PH == 7)
+                if(PH == 7)
                 {
                     GameState.lifeCount--;
                     if(GameState.lifeCount >= 0)
