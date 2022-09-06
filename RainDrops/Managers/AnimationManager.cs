@@ -23,14 +23,16 @@ namespace RainDrops.Managers
         public float Scale { get; set; }
         public float Rotation { get; set; }
         public Color Color { get; set; }
+        public float Opacity { get; set; }
         public AnimationManager(Animation animation)
         {
             _animation = animation;
+            Opacity = 1f;
         }
 
         public void Draw(SpriteBatch spriteBatch)
         {
-            spriteBatch.Draw(_animation.Texture, Position, new Rectangle(_animation.CurrentFrame * _animation.FrameWidth, 0, _animation.FrameWidth, _animation.FrameHeight), Color, Rotation, Origin, Scale, SpriteEffects.None, Layer);
+            spriteBatch.Draw(_animation.Texture, Position, new Rectangle(_animation.CurrentFrame * _animation.FrameWidth, 0, _animation.FrameWidth, _animation.FrameHeight), Color*Opacity, Rotation, Origin, Scale, SpriteEffects.None, Layer);
         }
 
         public void Play(Animation animationKey)

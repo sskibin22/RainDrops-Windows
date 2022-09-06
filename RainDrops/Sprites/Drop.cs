@@ -48,6 +48,7 @@ namespace RainDrops.Sprites
                 if(PH == 7)
                 {
                     GameState.lifeCount--;
+                    GameState.statManager.IncreaseMissedDropTotal();
                     if(GameState.lifeCount >= 0)
                         GameState.lives[GameState.lifeCount].IsRemoved = true;
                 }

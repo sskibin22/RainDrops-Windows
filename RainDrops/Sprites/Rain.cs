@@ -13,6 +13,7 @@ namespace RainDrops.Sprites
     {
         public Rain(Texture2D texture) : base(texture)
         {
+            Layer = 0.81f;
         }
         public override void Update(GameTime gameTime)
         {

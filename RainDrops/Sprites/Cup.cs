@@ -17,6 +17,13 @@ namespace RainDrops.Sprites
         public bool acid = false;
         public int dropCount;
 
+        private float stunTimer;
+        private const int stunTime = 1500;
+        private bool stunned = false;
+        private int stunning;
+        private float equilibrium;
+        private bool flag;
+
         private Color green1, green2, green3, green4,
                       purple1, purple2, purple3, purple4,
                       blue;
@@ -32,13 +39,38 @@ namespace RainDrops.Sprites
             purple3 = new Color(74, 29, 86);
             purple4 = new Color(61, 21, 68);
 
+            Layer = 0.82f;
             dropCount = 0;
             Scale = 0.9f;
             Position = new Vector2(RainDropsGame.ScreenWidth / 2, RainDropsGame.ScreenHeight - (Rect.Height / 2) - GameState.phBarHeight);
+
+            stunTimer = 0f;
+            stunning = 0;
+            flag = false;
         }
 
         public override void Update(GameTime gameTime)
         {
+            if (stunned)
+            {
+                if (flag)
+                {
+                    X = equilibrium + 2;
+                    flag = false;
+                }
+                else
+                {
+                    X = equilibrium - 2;
+                    flag = true;
+                }
+                
+                stunTimer += (float)gameTime.ElapsedGameTime.TotalMilliseconds;
+                if (stunTimer >= stunTime)
+                {
+                    stunned = false;
+                    stunTimer = 0;
+                }
+            }
             Move();
             if (!splashing)
             {
@@ -94,6 +126,10 @@ namespace RainDrops.Sprites
             }
             return false;
         }
+        public void Stun()
+        {
+            stunned = true;
+        }
         public void Splash(GameTime gameTime)
         {
             if (dropCount - 1 >= 0 && _animationManager.PlayOnce(_animations[$"splash_{dropCount-1}"], gameTime))
@@ -124,8 +160,14 @@ namespace RainDrops.Sprites
                 return false;
             }
         }
+        public float GetHeight()
+        {
+            return (_textures["defaultCup"].Height * Scale)+0.5f;
+        }
         public void Reset()
         {
+            stunned = false;
+            stunTimer = 0f;
             dropCount = 0;
             _texture = _textures["defaultCup"];
             _animations["defaultWater"].CurrentFrame = 0;
@@ -133,8 +175,13 @@ namespace RainDrops.Sprites
         }
         private void Move()
         {
-            X = RainDropsGame.scaledMouse.X;
-            X = MathHelper.Clamp(Position.X, Rect.Width / 2, RainDropsGame.ScreenWidth - Rect.Width/2);
+            if(stunned == false)
+            {
+                X = RainDropsGame.scaledMouse.X;
+                X = MathHelper.Clamp(Position.X, Rect.Width / 2, RainDropsGame.ScreenWidth - Rect.Width/2);
+                equilibrium = X;
+            }
+            
         }
     }
 }

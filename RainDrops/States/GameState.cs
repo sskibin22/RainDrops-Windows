@@ -2,7 +2,9 @@
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using RainDrops.Controls;
 using RainDrops.Emitters;
+using RainDrops.Events;
 using RainDrops.Managers;
 using RainDrops.Models;
 using RainDrops.Sprites;
@@ -22,40 +24,42 @@ namespace RainDrops.States
         public static bool hasStarted = false; //start game boolean variable
 
         public static int phBarHeight = 45;
+        public static float cupHeight;
         public static float splashHeightMult = 1.035f;
 
         public static int dropCount = 0; //Total drops on current GameState screen
         public static int lifeCount;
 
         public static bool emptyingCup = false;
+        
+        public static List<float> dropCols;
+        public static int numDropCols;
+
+        public static Color bgColor = Color.White;
+        public static float bgAlpha = 1f;
         #endregion
 
         #region Private Variables
         private List<Sprite> sprites; //Contains all sprites on GameState screen
+        private List<AnimatedButton> buttons;
 
         /* Drop attributes calculated during game */
-        private List<float> dropCols;
         private float scaledDropFrameWidth;
         private float scaledDropFrameHeight;
-        private int numDropCols;
+        
         private int randCol;
         private float randDropSpeed;
         private float dropScale = 0.9f; //scaling multiplier for drops
-
-        /* Caught drop counters */
-        private int dropsCaught;    //number of rain drops caught
-        private int acidDropsCaught;
-        private int alkDropsCaught;
 
         /* Game attributes */
         private int maxLives = 3;
         private int maxDrops = 35;  //Max drop instances allowed on screen at one time
         private int diffCount = 0;  //difficulty counter for level manager
-        private int catchCount; //How many drops need to be caught to win the level
         private float dropSpawnRate; //spawn rate for drops
         private double dropSpeedMin; //minimum drop speed on Y-axis
         private double dropSpeedMax; //maximum drop speed on Y-axis
         private float animationFrameSpeed = 83.33f; //(about 12fps)
+        private bool gameOver = false;
 
         /* Must total 1 (ex: rainDropChance = 0.2, acidDropChance = 0.4, alkDropChance = 0.4) */
         private double rainDropChance; 
@@ -65,10 +69,11 @@ namespace RainDrops.States
         /* Timers */
         private float timer = 0;
         private float endTimer = 0;
+        private float lightningEventTimer = 0;
         #endregion
 
         #region Sprite Fonts
-        private SpriteFont font;
+        private SpriteFont pixelDigiFont; //100% free
         #endregion
 
         #region Textures
@@ -77,16 +82,16 @@ namespace RainDrops.States
         private Texture2D cloudBarTexture;
         private Texture2D phSelectTexture;
         private Texture2D standardCupTexture;
-        private Texture2D cupSplashTexture_30;
         private Texture2D rainAnimTexture;
         private Texture2D acidAnimTexture;
         private Texture2D alkAnimTexture;
         private Texture2D acidGlowTexture;
         private Texture2D alkGlowTexture;
+        private Texture2D playAgainButtonTexture;
+        private Texture2D quitButtonTexture;
         #endregion
 
         #region Animation Dictionaries
-        private Dictionary<string, Animation> splashDict;
         private Dictionary<string, Animation> dropDict;
         private Dictionary<string, Animation> startDict;
         #endregion
@@ -116,10 +121,22 @@ namespace RainDrops.States
         private CloudBar cloud4;
         private CountDown countDown;
         private List<DebuffIndicator> debuffIndicators;
+        private GameOverPrompt gameOverPrompt; 
+        private GameOverText gameOverText;
+        private LightningBall lightningBall;
+        private LightningBolt lightningBolt;
+        #endregion
+
+        #region Public Static Managers
+        public static StatManager statManager;
         #endregion
 
         #region Private Managers
         private DeBuffManager deBuffManager;
+        #endregion
+
+        #region Private Events
+        private LightningEvent lightningEvent;
         #endregion
 
         #region Private Emitters
@@ -141,7 +158,6 @@ namespace RainDrops.States
         /* Updates Game difficulty settings through given level manager variables */
         public void UpdateDifficulty()
         {
-            catchCount = RainDropsGame.levelManager._catchCount;
             dropSpawnRate = RainDropsGame.levelManager._dropSpawnRate;
             dropSpeedMin = RainDropsGame.levelManager._dropSpeedMin;
             dropSpeedMax = RainDropsGame.levelManager._dropSpeedMax;
@@ -192,11 +208,11 @@ namespace RainDrops.States
         public override void LoadContent()
         {
             /* Load GameState SpriteFonts */
-            font = _content.Load<SpriteFont>("Fonts/scoreFont");
+            pixelDigiFont = _content.Load<SpriteFont>("Fonts/PixelDigi");
 
             /* Load GameState Textures */
             bgTexture = _content.Load<Texture2D>("BackGrounds/MountainsBG2");
-            phBarTexture = _content.Load<Texture2D>("UI/phBar");
+            phBarTexture = _content.Load<Texture2D>("UI/Panels/phBar");
             cloudBarTexture = _content.Load<Texture2D>("Floaters/cloudBarLong");
             phSelectTexture = _content.Load<Texture2D>("UI/phSelectCircle");
             rainAnimTexture = _content.Load<Texture2D>("Drops/dropBlueSS");
@@ -204,9 +220,9 @@ namespace RainDrops.States
             alkAnimTexture = _content.Load<Texture2D>("Drops/dropPurpleSS");
             acidGlowTexture = _content.Load<Texture2D>("Drops/glowGreenSS");
             alkGlowTexture = _content.Load<Texture2D>("Drops/glowPurpleSS");
-            //standardCupTexture = _content.Load<Texture2D>("Cups/StandardCup_rain/StandardCupSS");
             standardCupTexture = _content.Load<Texture2D>("Cups/StandardCup/StandardCupStates/standardCup7");
-            cupSplashTexture_30 = _content.Load<Texture2D> ("Animations/CupSplashes/splashAnimation_30");
+            playAgainButtonTexture = _content.Load<Texture2D>("UI/Buttons/playAgainButton");
+            quitButtonTexture = _content.Load<Texture2D>("UI/Buttons/quitButton");
 
             /* Instantiate Animations */
             rainDropAnimation = new Animation(rainAnimTexture, 2) { FrameSpeed = animationFrameSpeed }; 
@@ -215,17 +231,10 @@ namespace RainDrops.States
             acidGlowAnimation = new Animation(acidGlowTexture, 10) { FrameSpeed = animationFrameSpeed }; 
             alkGlowAnimation = new Animation(alkGlowTexture, 10) { FrameSpeed = animationFrameSpeed }; 
             lifeDropAnimation = new Animation(rainAnimTexture, 2) { FrameSpeed = animationFrameSpeed };
-            acidIndAnimation = new Animation(_content.Load<Texture2D>("Animations/Indicators/acidDebuff"), 12) { FrameSpeed = animationFrameSpeed };
-            alkIndAnimation = new Animation(_content.Load<Texture2D>("Animations/Indicators/alkDebuff"), 24) { FrameSpeed = animationFrameSpeed };
+            acidIndAnimation = new Animation(_content.Load<Texture2D>("Floaters/IndicatorSprites/acidDebuff"), 12) { FrameSpeed = animationFrameSpeed };
+            alkIndAnimation = new Animation(_content.Load<Texture2D>("Floaters/IndicatorSprites/alkDebuff"), 24) { FrameSpeed = animationFrameSpeed };
 
             /* Instantiate Animation Dictionaries */
-            splashDict = new Dictionary<string, Animation>()
-            {
-                {"rainSplash", new Animation(_content.Load<Texture2D>("Animations/Splash/rainSplashSS"), 5){FrameSpeed = animationFrameSpeed } }, 
-                {"acidSplash", new Animation(_content.Load<Texture2D>("Animations/Splash/acidSplashSS"), 5){FrameSpeed = animationFrameSpeed } }, 
-                {"alkSplash", new Animation(_content.Load<Texture2D>("Animations/Splash/alkSplashSS"), 5){FrameSpeed = animationFrameSpeed } } 
-            };
-
             dropDict = new Dictionary<string, Animation>()
             {
                 {"rainDrop", rainDropAnimation },
@@ -237,11 +246,36 @@ namespace RainDrops.States
 
             startDict = new Dictionary<string, Animation>()
             {
-                {"three", new Animation(_content.Load<Texture2D>("Floaters/THREEtext"), 3){FrameSpeed = animationFrameSpeed } },
-                {"two", new Animation(_content.Load<Texture2D>("Floaters/TWOtext"), 3){FrameSpeed = animationFrameSpeed } },
-                {"one", new Animation(_content.Load<Texture2D>("Floaters/ONEtext"), 3){FrameSpeed = animationFrameSpeed } },
-                {"rain", new Animation(_content.Load<Texture2D>("Floaters/RAINtext"), 3){FrameSpeed = animationFrameSpeed } },
+                {"three", new Animation(_content.Load<Texture2D>("TextSprites/THREEtext"), 3){FrameSpeed = animationFrameSpeed } },
+                {"two", new Animation(_content.Load<Texture2D>("TextSprites/TWOtext"), 3){FrameSpeed = animationFrameSpeed } },
+                {"one", new Animation(_content.Load<Texture2D>("TextSprites/ONEtext"), 3){FrameSpeed = animationFrameSpeed } },
+                {"rain", new Animation(_content.Load<Texture2D>("TextSprites/RAINtext"), 3){FrameSpeed = animationFrameSpeed } },
             };
+
+            /* Calculate Drop column positions and add to dropCols List */
+            dropCols = new List<float>();
+
+            scaledDropFrameWidth = rainDropAnimation.FrameWidth * dropScale;
+            scaledDropFrameHeight = rainDropAnimation.FrameHeight * dropScale;
+            numDropCols = (int)(RainDropsGame.ScreenWidth / (scaledDropFrameWidth));
+            float preTotal = (scaledDropFrameWidth * (numDropCols - 1)) + (scaledDropFrameWidth/2);
+            float difference = (RainDropsGame.ScreenWidth - preTotal) - (scaledDropFrameWidth/2);
+            float centerBy = difference / 2f;
+            float total = 0;
+            for (int i = 0; i < numDropCols; i++)
+            {
+                if (i == 0)
+                {
+                    total += ((scaledDropFrameWidth) / 2) + centerBy;
+
+                }
+                else
+                {
+                    total += scaledDropFrameWidth;
+                }
+                dropCols.Add(total);
+
+            }
 
             /* Instantiate Necessary Sprites */
             cloud1 = new CloudBar(cloudBarTexture) { Origin = Vector2.Zero, Layer = 0.9f, Speed = 0.8f, Position = new Vector2(0, 0) };
@@ -262,8 +296,8 @@ namespace RainDrops.States
                 { "alkState3", _content.Load<Texture2D>("Cups/StandardCup/StandardCupStates/standardCup12") },
                 { "alkState4", _content.Load<Texture2D>("Cups/StandardCup/StandardCupStates/standardCup14") }
             }
-                ,new Dictionary<string, Animation>() 
-            { 
+                , new Dictionary<string, Animation>()
+            {
                 { "defaultWater", new Animation(_content.Load<Texture2D>("Cups/StandardCup/WaterStates"), 31) {FrameSpeed = 15 } },
                 { "splash_0", new Animation(_content.Load<Texture2D> ("Cups/StandardCup/SplashAnimations/SplashAnimation_0"), 19) {FrameSpeed = 10 } },
                 { "splash_1", new Animation(_content.Load<Texture2D> ("Cups/StandardCup/SplashAnimations/SplashAnimation_1"), 19) {FrameSpeed = 10 } },
@@ -295,18 +329,21 @@ namespace RainDrops.States
                 { "splash_27", new Animation(_content.Load<Texture2D> ("Cups/StandardCup/SplashAnimations/SplashAnimation_27"), 19) {FrameSpeed = 10 } },
                 { "splash_28", new Animation(_content.Load<Texture2D> ("Cups/StandardCup/SplashAnimations/SplashAnimation_28"), 19) {FrameSpeed = 10 } },
                 { "splash_29", new Animation(_content.Load<Texture2D> ("Cups/StandardCup/SplashAnimations/SplashAnimation_29"), 19) {FrameSpeed = 10 } },
-                { "splash_30", new Animation(_content.Load<Texture2D> ("Cups/StandardCup/SplashAnimations/SplashAnimation_30"), 19) {FrameSpeed = 10 } },
-                { "acid_30", new Animation(_content.Load<Texture2D> ("Animations/CupSplashes/AcidAnimation_30"), 9) {FrameSpeed = 83 } },
-            }) 
-            { 
-                Layer = 0.91f 
-            }; 
+                { "splash_30", new Animation(_content.Load<Texture2D> ("Cups/StandardCup/SplashAnimations/SplashAnimation_30"), 19) {FrameSpeed = 10 } }
+            });
+            /*Calculate cup height*/
+            cupHeight = cup.GetHeight();
+
             lives = new List<LifeIndicator>()
             {
                 new LifeIndicator(new Dictionary<string, Animation>(){{"lifeDrop", lifeDropAnimation } }){Position = new Vector2((lifeDropAnimation.FrameWidth*0.5f), (lifeDropAnimation.FrameHeight*0.5f/2)+1), Scale = 0.5f, Layer = 1f},
                 new LifeIndicator(new Dictionary<string, Animation>(){{"lifeDrop", lifeDropAnimation } }){Position = new Vector2(((lifeDropAnimation.FrameWidth*0.5f)*2)+10, (lifeDropAnimation.FrameHeight*0.5f/2)+1), Scale = 0.5f, Layer = 1f},
                 new LifeIndicator(new Dictionary<string, Animation>(){{"lifeDrop", lifeDropAnimation } }){Position = new Vector2(((lifeDropAnimation.FrameWidth*0.5f)*3)+20, (lifeDropAnimation.FrameHeight*0.5f/2)+1), Scale = 0.5f, Layer = 1f}
             };
+
+            gameOverPrompt = new GameOverPrompt(new Dictionary<string, Animation>() { { "shine", new Animation(_content.Load<Texture2D>("UI/Panels/gameOverBG"), 24) { FrameSpeed = 100f } } });
+
+            gameOverText = new GameOverText(new Dictionary<string, Animation>() { { "default", new Animation(_content.Load<Texture2D>("TextSprites/GAMEOVERtext"), 3) { FrameSpeed = animationFrameSpeed } } });
 
             float deBuffScale = 0.5f;
             debuffIndicators = new List<DebuffIndicator>()
@@ -316,36 +353,18 @@ namespace RainDrops.States
             };
             countDown = new CountDown(startDict);
 
+            lightningBall = new LightningBall(new Dictionary<string, Animation>() { { "default", new Animation(_content.Load<Texture2D>("Events/LightningEvent/lightningBall"), 4) { FrameSpeed = animationFrameSpeed } } });
+            lightningBolt = new LightningBolt(new Dictionary<string, Animation>() { { "default", new Animation(_content.Load<Texture2D>("Events/LightningEvent/lightningBolt"), 6) { FrameSpeed = 166.67f } } });
+
             /*Instantiate Managers */
             deBuffManager = new DeBuffManager(cup, debuffIndicators);
+            statManager = new StatManager(pixelDigiFont);
+
+            /*Instantiate Events */
+            lightningEvent = new LightningEvent(lightningBolt, lightningBall);
 
             /* Instantiate Emitters */
-            rainEmitter = new RainEmitter(new Rain(_content.Load<Texture2D>("EmitterSprites/rain_1")) { Layer = 0.81f });
-
-            /* Calculate Drop column positions and add to dropCols List */
-            dropCols = new List<float>();
-
-            scaledDropFrameWidth = rainDropAnimation.FrameWidth * dropScale;
-            scaledDropFrameHeight = rainDropAnimation.FrameHeight * dropScale;
-            numDropCols = (int)(RainDropsGame.ScreenWidth / (scaledDropFrameWidth));
-            float preTotal = (scaledDropFrameWidth * (numDropCols - 1)) + (scaledDropFrameWidth/2);
-            float difference = (RainDropsGame.ScreenWidth - preTotal) - (scaledDropFrameWidth/2);
-            float centerBy = difference / 2f;
-            float total = 0;
-            for (int i = 0; i < numDropCols; i++)
-            {
-                if (i == 0)
-                {
-                    total += ((scaledDropFrameWidth) / 2) + centerBy;
-
-                }
-                else
-                {
-                    total += scaledDropFrameWidth;
-                }
-                dropCols.Add(total);
-
-            }
+            rainEmitter = new RainEmitter(new Rain(_content.Load<Texture2D>("EmitterSprites/rain_1")));
 
             /* Load Initial Game settings */
             UpdateDifficulty(); //set initial difficulty settings
@@ -353,7 +372,6 @@ namespace RainDrops.States
         }
         private void LevelUp()
         {
-            dropsCaught = 0;
             RainDropsGame.levelManager.IncreaseLevel();
             diffCount++;
             /* Apply difficulty settings as needed */
@@ -379,6 +397,7 @@ namespace RainDrops.States
         /* Restart Game back to it's original state */
         private void Restart()
         {
+            RainDropsGame.levelManager.ResetLevel();
             /* Apply difficulty settings as needed */
             if (diffCount == 4)
             {
@@ -390,24 +409,48 @@ namespace RainDrops.States
             {
                 ModifyLevelDifficulty();
             }
-
+            gameOver = false;
+            gameOverText.isActive = false;
+            gameOverPrompt.Scale = 0f;
             /* Initialize Game attributes */
+            statManager.Reset();
             endTimer = 0f;
             splashHeightMult = 1.035f;
-            dropsCaught = 0;
-            acidDropsCaught = 0;
-            alkDropsCaught = 0;
             lifeCount = 3;
             dropCount = 0;
             phSelect.Reset();
             cup.Reset();
             countDown.Reset();
             deBuffManager.Reset();
-            foreach(LifeIndicator life in lives)
+            lightningEvent.Stop();
+            lightningEventTimer = 0f;
+            bgAlpha = 1f;
+            foreach (LifeIndicator life in lives)
             {
                 life.IsRemoved = false;
             }
+            buttons = new List<AnimatedButton>()
+            {
+                new AnimatedButton(new Animation(playAgainButtonTexture, 2){FrameSpeed = animationFrameSpeed})
+                {
+                    Position = new Vector2((RainDropsGame.ScreenWidth/2)-100, (RainDropsGame.ScreenHeight/2)+170),
+                    Click = new EventHandler(PlayAgainButton_Click),
+                    Layer = 1f,
+                    Opacity = 1f,
+                    Scale = 1f,
+                    IsActive = false
+                },
 
+                new AnimatedButton(new Animation(quitButtonTexture, 2){FrameSpeed = animationFrameSpeed})
+                {
+                    Position = new Vector2((RainDropsGame.ScreenWidth/2)+100, (RainDropsGame.ScreenHeight/2)+170),
+                    Click = new EventHandler(QuitButton_Click),
+                    Layer = 1f,
+                    Opacity = 1f,
+                    Scale = 1f,
+                    IsActive = false
+                },
+            };
             /* Initialize sprites list */
             sprites = new List<Sprite>()
             {
@@ -421,11 +464,22 @@ namespace RainDrops.States
                 cloud3, 
                 cloud4,
                 debuffIndicators[0],
-                debuffIndicators[1]
+                debuffIndicators[1],
+                gameOverText
             };
 
             /* set Game started boolean to false */
             hasStarted = false;
+        }
+
+        private void PlayAgainButton_Click(object sender, EventArgs args)
+        {
+            Restart();
+        }
+
+        private void QuitButton_Click(object sender, EventArgs args)
+        {
+            _game.ChangeState(new MainMenuState(_game, _content));
         }
         private void SpawnDrops(GameTime gameTime)
         {
@@ -504,18 +558,15 @@ namespace RainDrops.States
                             cup.splashing = true;
                             cup.IncreaseFrame();
                             cup.IncreaseDropCount();
-                            dropsCaught++;    
+                            statManager.IncreaseRainDropTotal();
                         }
                         dropCount--;
                         sprite.IsRemoved = true;
                     }
                     if (drop.IsCupCollision(cup) && sprite is AcidRainDrop)
                     {
-                        //cup.splashing = true;
-                        //cup.acid = true;
                         var acidDrop = sprite as AcidRainDrop;
-                        //dropsCaught++;
-                        acidDropsCaught++;
+                        statManager.IncreaseAcidDropTotal();
                         dropCount--;
                         sprite.IsRemoved = true;
                         MovePHSelector(acidDrop);
@@ -524,8 +575,7 @@ namespace RainDrops.States
                     if (drop.IsCupCollision(cup) && sprite is AlkRainDrop)
                     {
                         var alkDrop = sprite as AlkRainDrop;
-                        //dropsCaught++;
-                        alkDropsCaught++;
+                        statManager.IncreaseAlkDropTotal();
                         dropCount--;
                         sprite.IsRemoved = true;
                         MovePHSelector(alkDrop);
@@ -590,6 +640,23 @@ namespace RainDrops.States
             //if ESC key is pressed exit game
             if (keyState.IsKeyDown(Keys.Escape))
                 _game.Exit();
+
+            if (gameOver)
+            {
+                gameOverPrompt.Update(gameTime);
+                if(gameOverPrompt.Scale >= 1f)
+                {
+                    gameOverText.isActive = true;
+                    gameOverText.Update(gameTime);
+                    statManager.IsActive = true;
+                    foreach (var button in buttons)
+                    {
+                        button.IsActive = true;
+                        button.Update(gameTime);
+                    }
+                }
+                return;
+            }
             //if Space key is pressed, start game
             if (previousKeyState.IsKeyDown(Keys.Space) && currKeyState.IsKeyUp(Keys.Space))
             {
@@ -637,13 +704,28 @@ namespace RainDrops.States
             if (!hasStarted)
                 return;
 
+            lightningEventTimer += (float)gameTime.ElapsedGameTime.TotalMilliseconds;
+            if(lightningEventTimer >= lightningEvent.EventTimer)
+            {
+                lightningEvent.Start();
+
+                lightningEvent.Update(gameTime, cup);
+                if(lightningEvent.EventActive == false)
+                {
+                    lightningEventTimer = 0;
+                    lightningEvent.Stop();
+                }
+            }
+
             SpawnDrops(gameTime);
             
             /* If player loses all lives reset difficulty and game. */
             if (lifeCount < 0)
             {
-                RainDropsGame.levelManager.ResetLevel();
-                Restart();
+                gameOver = true;
+                sprites.Add(gameOverPrompt);
+                //RainDropsGame.levelManager.ResetLevel();
+                //Restart();
             }
 
             PostUpdate(gameTime);
@@ -653,7 +735,7 @@ namespace RainDrops.States
         {
             spriteBatch.Begin(SpriteSortMode.FrontToBack);
             //Draw background
-            spriteBatch.Draw(bgTexture, new Rectangle(0, 0, RainDropsGame.ScreenWidth, RainDropsGame.ScreenHeight), null, Color.White, 0f, Vector2.Zero, SpriteEffects.None, 0f);
+            spriteBatch.Draw(bgTexture, new Rectangle(0, 0, RainDropsGame.ScreenWidth, RainDropsGame.ScreenHeight), null, bgColor*bgAlpha, 0f, Vector2.Zero, SpriteEffects.None, 0f);
             //Draw ph bar
             spriteBatch.Draw(phBarTexture, new Rectangle(0, RainDropsGame.ScreenHeight - phBarHeight, RainDropsGame.ScreenWidth, phBarHeight), null, Color.White, 0f, Vector2.Zero, SpriteEffects.None, 0.9f);
             //Draw rain emitter
@@ -663,10 +745,21 @@ namespace RainDrops.States
             {
                 sprite.Draw(gameTime, spriteBatch);
             }
+            //Draw Components
+            foreach (var button in buttons)
+            {
+                button.Draw(gameTime, spriteBatch);
+            }
+            //Draw Events
+            lightningEvent.Draw(gameTime, spriteBatch);
+            //Draw Stats
+            statManager.Draw(gameTime, spriteBatch);
             //Draw Level
-            spriteBatch.DrawString(font, $"Level {RainDropsGame.levelManager.Level}", new Vector2((int)(RainDropsGame.ScreenWidth*0.9), (int)(RainDropsGame.ScreenHeight*0.005)), Color.Black, 0f, Vector2.Zero, 1f, SpriteEffects.None, 1f);
+            spriteBatch.DrawString(pixelDigiFont, $"Level {RainDropsGame.levelManager.Level}", new Vector2((int)(RainDropsGame.ScreenWidth * 0.8)-2, (int)(RainDropsGame.ScreenHeight * 0.012)+2), Color.Black*0.4f, 0f, pixelDigiFont.MeasureString($"{cup.dropCount}") / 2, 1f, SpriteEffects.None, 0.99f);
+            spriteBatch.DrawString(pixelDigiFont, $"Level {RainDropsGame.levelManager.Level}", new Vector2((int)(RainDropsGame.ScreenWidth*0.8), (int)(RainDropsGame.ScreenHeight*0.012)), Color.Black, 0f, pixelDigiFont.MeasureString($"{cup.dropCount}") / 2, 1f, SpriteEffects.None, 1f);
             //Draw score
-            spriteBatch.DrawString(font, $"Drops: {cup.dropCount}", new Vector2(cup.Position.X - 30, cup.Position.Y - 20), Color.Black, 0f, Vector2.Zero, 1f, SpriteEffects.None, 1f);
+            spriteBatch.DrawString(pixelDigiFont, $"{cup.dropCount}", new Vector2(cup.Position.X-2, cup.Position.Y+2), Color.Black*0.3f, 0f, pixelDigiFont.MeasureString($"{cup.dropCount}")/2, 1f, SpriteEffects.None, 0.99f);
+            spriteBatch.DrawString(pixelDigiFont, $"{cup.dropCount}", new Vector2(cup.Position.X, cup.Position.Y), Color.Black, 0f, pixelDigiFont.MeasureString($"{cup.dropCount}") / 2, 1f, SpriteEffects.None, 1f);
             spriteBatch.End();
         }
     }

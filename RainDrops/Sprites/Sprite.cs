@@ -21,6 +21,7 @@ namespace RainDrops.Sprites
         protected float rotation = 0f;
         protected float scale = 1f;
         protected float layer = 1f;
+        protected float opacity = 1f;
         protected Color color = Color.White;
         protected Vector2 origin;
         protected Vector2 position;
@@ -39,7 +40,18 @@ namespace RainDrops.Sprites
                 }
             }
         }
-        public float Opacity { get; set; }
+        public float Opacity
+        {
+            get { return opacity; }
+            set
+            {
+                opacity = value;
+                if (_animationManager != null)
+                {
+                    _animationManager.Opacity = opacity;
+                }
+            }
+        }
         public float Speed;
         public Vector2 Velocity;
         public float Rotation 
@@ -150,6 +162,7 @@ namespace RainDrops.Sprites
         {
             _texture = null;
             //Color = Color.White;
+            //Opacity = 1f;
             _animations = animations;
             var animation = _animations.FirstOrDefault().Value;
             _animationManager = new AnimationManager(animation);

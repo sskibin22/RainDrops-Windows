@@ -169,7 +169,7 @@ namespace RainDrops
         protected override void Draw(GameTime gameTime)
         {
             GraphicsDevice.SetRenderTarget(renderTarget);
-            GraphicsDevice.Clear(Color.Black);
+            GraphicsDevice.Clear(Color.White);
 
             _currentState.Draw(gameTime, spriteBatch);
 

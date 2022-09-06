@@ -10,7 +10,6 @@ namespace RainDrops.Managers
     {
         public int Level { get; private set; }
 
-        public int _catchCount;
         public float _dropSpawnRate;
         public double _dropSpeedMin;
         public double _dropSpeedMax;
@@ -29,7 +28,6 @@ namespace RainDrops.Managers
         {
             Level = 1;
             SetBaseDifficulty();
-            _catchCount = 30;
         }
 
         public void IncreaseLevel()
