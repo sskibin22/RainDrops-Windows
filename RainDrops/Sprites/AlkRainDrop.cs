@@ -1,6 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using RainDrops.Models;
+using RainDrops.States;
 using RainDrops.Tools;
 using System;
 using System.Collections.Generic;
@@ -14,12 +15,31 @@ namespace RainDrops.Sprites
     {
         public AlkRainDrop(Dictionary<string, Animation> animations) : base(animations)
         {
-            animationNum = 2;
             WeightedRandomExecutor wre = new WeightedRandomExecutor(
-                new WeightedRandomParam(() => { PH = 14; }, 20), // 20% chance for PH to be 14
-                new WeightedRandomParam(() => { PH = 11; }, 80));   // 80% chance for PH to be 11
+                new WeightedRandomParam(() => { IsGlowing = true; PH = 14; }, 20), // 20% chance for PH to be 14
+                new WeightedRandomParam(() => { IsGlowing = false; PH = 11; }, 80));   // 80% chance for PH to be 11
             wre.Execute();
         }
+        protected override void UpdateAnimation(GameTime gameTime)
+        {
+            if (IsGlowing)
+            {
+                _animationManager.Play(_animations["glowingAlk"]);
+            }
+            else
+            {
+                _animationManager.Play(_animations["standardAlk"]);
+            }
+            _animationManager.Update(gameTime);
+        }
 
+        protected override void RemoveDrop()
+        {
+            if (Rect.Bottom >= RainDropsGame.ScreenHeight)
+            {
+                IsRemoved = true;
+                GameState.dropCount--;
+            }
+        }
     }
 }

@@ -35,11 +35,14 @@ namespace RainDrops.States
         public static List<float> dropCols;
         public static int numDropCols;
 
+        public static Background bg;
         public static Color bgColor = Color.White;
         public static float bgAlpha = 1f;
+        public static float dropScale = 0.9f;
+        public static int rainDropCount = 0;
         #endregion
 
-        #region Private Variables
+        #region Private Lists
         private List<Sprite> sprites; //Contains all sprites on GameState screen
         private List<AnimatedButton> buttons;
 
@@ -49,9 +52,9 @@ namespace RainDrops.States
         
         private int randCol;
         private float randDropSpeed;
-        private float dropScale = 0.9f; //scaling multiplier for drops
 
         /* Game attributes */
+        private int maxRainDrops = 3;
         private int maxLives = 3;
         private int maxDrops = 35;  //Max drop instances allowed on screen at one time
         private int diffCount = 0;  //difficulty counter for level manager
@@ -68,7 +71,6 @@ namespace RainDrops.States
 
         /* Timers */
         private float timer = 0;
-        private float endTimer = 0;
         private float lightningEventTimer = 0;
         #endregion
 
@@ -92,17 +94,10 @@ namespace RainDrops.States
         #endregion
 
         #region Animation Dictionaries
-        private Dictionary<string, Animation> dropDict;
         private Dictionary<string, Animation> startDict;
         #endregion
 
         #region Animations
-        private Animation rainDropAnimation;
-        private Animation acidDropAnimation;
-        private Animation alkDropAnimation;
-        private Animation acidGlowAnimation;
-        private Animation alkGlowAnimation;
-        private Animation lifeDropAnimation;
         private Animation acidIndAnimation;
         private Animation alkIndAnimation;
         #endregion
@@ -125,6 +120,10 @@ namespace RainDrops.States
         private GameOverText gameOverText;
         private LightningBall lightningBall;
         private LightningBolt lightningBolt;
+        #endregion
+
+        #region Private Buttons
+        AnimatedButton startButton;
         #endregion
 
         #region Public Static Managers
@@ -225,24 +224,10 @@ namespace RainDrops.States
             quitButtonTexture = _content.Load<Texture2D>("UI/Buttons/quitButton");
 
             /* Instantiate Animations */
-            rainDropAnimation = new Animation(rainAnimTexture, 2) { FrameSpeed = animationFrameSpeed }; 
-            acidDropAnimation = new Animation(acidAnimTexture, 2) { FrameSpeed = animationFrameSpeed }; 
-            alkDropAnimation = new Animation(alkAnimTexture, 2) { FrameSpeed = animationFrameSpeed }; 
-            acidGlowAnimation = new Animation(acidGlowTexture, 10) { FrameSpeed = animationFrameSpeed }; 
-            alkGlowAnimation = new Animation(alkGlowTexture, 10) { FrameSpeed = animationFrameSpeed }; 
-            lifeDropAnimation = new Animation(rainAnimTexture, 2) { FrameSpeed = animationFrameSpeed };
             acidIndAnimation = new Animation(_content.Load<Texture2D>("Floaters/IndicatorSprites/acidDebuff"), 12) { FrameSpeed = animationFrameSpeed };
             alkIndAnimation = new Animation(_content.Load<Texture2D>("Floaters/IndicatorSprites/alkDebuff"), 24) { FrameSpeed = animationFrameSpeed };
 
             /* Instantiate Animation Dictionaries */
-            dropDict = new Dictionary<string, Animation>()
-            {
-                {"rainDrop", rainDropAnimation },
-                {"acidDrop", acidDropAnimation },
-                {"alkDrop", alkDropAnimation },
-                {"acidGlow", acidGlowAnimation },
-                {"alkGlow", alkGlowAnimation }
-            };
 
             startDict = new Dictionary<string, Animation>()
             {
@@ -255,8 +240,8 @@ namespace RainDrops.States
             /* Calculate Drop column positions and add to dropCols List */
             dropCols = new List<float>();
 
-            scaledDropFrameWidth = rainDropAnimation.FrameWidth * dropScale;
-            scaledDropFrameHeight = rainDropAnimation.FrameHeight * dropScale;
+            scaledDropFrameWidth = (rainAnimTexture.Width / 2) * dropScale; //rainDropAnimation.FrameWidth * dropScale; 
+            scaledDropFrameHeight = rainAnimTexture.Height * dropScale;
             numDropCols = (int)(RainDropsGame.ScreenWidth / (scaledDropFrameWidth));
             float preTotal = (scaledDropFrameWidth * (numDropCols - 1)) + (scaledDropFrameWidth/2);
             float difference = (RainDropsGame.ScreenWidth - preTotal) - (scaledDropFrameWidth/2);
@@ -278,6 +263,8 @@ namespace RainDrops.States
             }
 
             /* Instantiate Necessary Sprites */
+            //bg = new Background(new Dictionary<string, Animation>() { { "default", new Animation(_content.Load<Texture2D>("BackGrounds/Savana/savanaBG"), 10) { FrameSpeed = 166.667f } } });
+            bg = new Background(_content.Load<Texture2D>("BackGrounds/GrassyNightBG"));
             cloud1 = new CloudBar(cloudBarTexture) { Origin = Vector2.Zero, Layer = 0.9f, Speed = 0.8f, Position = new Vector2(0, 0) };
             cloud2 = new CloudBar(cloudBarTexture) { Origin = Vector2.Zero, Layer = 0.9f, Speed = 0.8f, Position = new Vector2(cloudBarTexture.Width, 0) };
             cloud3 = new CloudBar(cloudBarTexture) { Origin = Vector2.Zero, Layer = 0.8f, Speed = 1f, Position = new Vector2(50, 20) };
@@ -334,11 +321,22 @@ namespace RainDrops.States
             /*Calculate cup height*/
             cupHeight = cup.GetHeight();
 
+            startButton = new AnimatedButton(new Animation(_content.Load<Texture2D>("UI/Buttons/startButton"), 2) { FrameSpeed = 500 })
+            {
+                Position = new Vector2(RainDropsGame.ScreenWidth / 2, RainDropsGame.ScreenHeight / 2),
+                Click = new EventHandler(StartButton_Click),
+                Layer = 1f,
+                Opacity = 1f,
+                Scale = 1f,
+                IsActive = true,
+                Play = true
+            };
+
             lives = new List<LifeIndicator>()
             {
-                new LifeIndicator(new Dictionary<string, Animation>(){{"lifeDrop", lifeDropAnimation } }){Position = new Vector2((lifeDropAnimation.FrameWidth*0.5f), (lifeDropAnimation.FrameHeight*0.5f/2)+1), Scale = 0.5f, Layer = 1f},
-                new LifeIndicator(new Dictionary<string, Animation>(){{"lifeDrop", lifeDropAnimation } }){Position = new Vector2(((lifeDropAnimation.FrameWidth*0.5f)*2)+10, (lifeDropAnimation.FrameHeight*0.5f/2)+1), Scale = 0.5f, Layer = 1f},
-                new LifeIndicator(new Dictionary<string, Animation>(){{"lifeDrop", lifeDropAnimation } }){Position = new Vector2(((lifeDropAnimation.FrameWidth*0.5f)*3)+20, (lifeDropAnimation.FrameHeight*0.5f/2)+1), Scale = 0.5f, Layer = 1f}
+                new LifeIndicator(new Dictionary<string, Animation>(){{"lifeDrop", new Animation(rainAnimTexture, 2) { FrameSpeed = animationFrameSpeed } } }){Position = new Vector2((rainAnimTexture.Width/2)*0.5f, (rainAnimTexture.Height*0.5f/2)+1), Scale = 0.5f, Layer = 1f},
+                new LifeIndicator(new Dictionary<string, Animation>(){{"lifeDrop", new Animation(rainAnimTexture, 2) { FrameSpeed = animationFrameSpeed } } }){Position = new Vector2((((rainAnimTexture.Width/2)*0.5f)*2)+10, (rainAnimTexture.Height*0.5f/2)+1), Scale = 0.5f, Layer = 1f},
+                new LifeIndicator(new Dictionary<string, Animation>(){{"lifeDrop", new Animation(rainAnimTexture, 2) { FrameSpeed = animationFrameSpeed } } }){Position = new Vector2((((rainAnimTexture.Width/2)*0.5f)*3)+20, (rainAnimTexture.Height*0.5f/2)+1), Scale = 0.5f, Layer = 1f}
             };
 
             gameOverPrompt = new GameOverPrompt(new Dictionary<string, Animation>() { { "shine", new Animation(_content.Load<Texture2D>("UI/Panels/gameOverBG"), 24) { FrameSpeed = 100f } } });
@@ -414,7 +412,6 @@ namespace RainDrops.States
             gameOverPrompt.Scale = 0f;
             /* Initialize Game attributes */
             statManager.Reset();
-            endTimer = 0f;
             splashHeightMult = 1.035f;
             lifeCount = 3;
             dropCount = 0;
@@ -424,11 +421,12 @@ namespace RainDrops.States
             deBuffManager.Reset();
             lightningEvent.Stop();
             lightningEventTimer = 0f;
-            bgAlpha = 1f;
+            bg.ChangeOpacity(1f);
             foreach (LifeIndicator life in lives)
             {
                 life.IsRemoved = false;
             }
+            startButton.Reset();
             buttons = new List<AnimatedButton>()
             {
                 new AnimatedButton(new Animation(playAgainButtonTexture, 2){FrameSpeed = animationFrameSpeed})
@@ -471,7 +469,12 @@ namespace RainDrops.States
             /* set Game started boolean to false */
             hasStarted = false;
         }
+        private void StartButton_Click(object sender, EventArgs args)
+        {
+            sprites.Add(countDown);
+            startButton.IsActive = false;
 
+        }
         private void PlayAgainButton_Click(object sender, EventArgs args)
         {
             Restart();
@@ -508,34 +511,57 @@ namespace RainDrops.States
                         }
                     }
                 }
+
                 /* Randomly spawn euither a rain drop, acid drop, or alkaline drop based on drop chances for each. 
                  * Apply attributes randomly selected above.
                  */
                 WeightedRandomExecutor wre = new WeightedRandomExecutor(
-                new WeightedRandomParam(() => currDrop = new RainDrop(dropDict)
+                new WeightedRandomParam(() => currDrop = new RainDrop(new Dictionary<string, Animation>()
+                {
+                    {"standardRain", new Animation(rainAnimTexture, 2){ FrameSpeed = animationFrameSpeed } }
+                })
                 {
                     Position = new Vector2(dropCols[randCol], scaledDropFrameHeight / 2),
                     DropSpeed = randDropSpeed,
-                    Scale = dropScale
                 }, rainDropChance),
-                new WeightedRandomParam(() => currDrop = new AcidRainDrop(dropDict)
+                new WeightedRandomParam(() => currDrop = new AcidRainDrop(new Dictionary<string, Animation>()
+                {
+                    {"standardAcid", new Animation(acidAnimTexture, 2){ FrameSpeed = animationFrameSpeed } },
+                    {"glowingAcid", new Animation(acidGlowTexture, 10){ FrameSpeed = animationFrameSpeed } }
+                })
                 {
 
                     Position = new Vector2(dropCols[randCol], scaledDropFrameHeight / 2),
                     DropSpeed = randDropSpeed,
-                    Scale = dropScale
                 }, acidDropChance),
-                new WeightedRandomParam(() => currDrop = new AlkRainDrop(dropDict)
+                new WeightedRandomParam(() => currDrop = new AlkRainDrop(new Dictionary<string, Animation>()
+                {
+                    {"standardAlk", new Animation(alkAnimTexture, 2){ FrameSpeed = animationFrameSpeed } },
+                    {"glowingAlk", new Animation(alkGlowTexture, 10){ FrameSpeed = animationFrameSpeed } }
+                })
                 {
                     Position = new Vector2(dropCols[randCol], scaledDropFrameHeight / 2),
                     DropSpeed = randDropSpeed,
-                    Scale = dropScale
                 }, alkDropChance));
                 wre.Execute();
+
                 if (dropCount < maxDrops)
                 {
-                    sprites.Add(currDrop);
-                    dropCount++;
+                    if(currDrop.PH == 7)
+                    {
+                        if(rainDropCount < maxRainDrops)
+                        {
+                            sprites.Add(currDrop);
+                            rainDropCount++;
+                            dropCount++;
+                        }
+                    }
+                    else
+                    {
+                        sprites.Add(currDrop);
+                        dropCount++;
+                    }
+                    
                 }
             }
         }
@@ -561,6 +587,7 @@ namespace RainDrops.States
                             statManager.IncreaseRainDropTotal();
                         }
                         dropCount--;
+                        rainDropCount--;
                         sprite.IsRemoved = true;
                     }
                     if (drop.IsCupCollision(cup) && sprite is AcidRainDrop)
@@ -629,11 +656,16 @@ namespace RainDrops.States
             KeyboardState keyState = Keyboard.GetState();
             MouseState mouseState = Mouse.GetState();
 
+            bg.Update(gameTime);
+
             //Cloud Movement Animations
             UpdateCloudAnimation();
 
             //Update rain emitter
             rainEmitter.Update(gameTime);
+            rainEmitter.RemoveParticles();
+
+            startButton.Update(gameTime);
 
             previousKeyState = currKeyState;
             currKeyState = keyState;
@@ -658,10 +690,10 @@ namespace RainDrops.States
                 return;
             }
             //if Space key is pressed, start game
-            if (previousKeyState.IsKeyDown(Keys.Space) && currKeyState.IsKeyUp(Keys.Space))
-            {
-                sprites.Add(countDown);
-            }
+            //if (RainDropsGame.mouseState.LeftButton == ButtonState.Released && RainDropsGame.prevMouseState.LeftButton == ButtonState.Pressed)
+            //{
+            //    sprites.Add(countDown);
+            //}
 
             if (cup.IsFull())
             {
@@ -716,7 +748,6 @@ namespace RainDrops.States
                     lightningEvent.Stop();
                 }
             }
-
             SpawnDrops(gameTime);
             
             /* If player loses all lives reset difficulty and game. */
@@ -735,7 +766,8 @@ namespace RainDrops.States
         {
             spriteBatch.Begin(SpriteSortMode.FrontToBack);
             //Draw background
-            spriteBatch.Draw(bgTexture, new Rectangle(0, 0, RainDropsGame.ScreenWidth, RainDropsGame.ScreenHeight), null, bgColor*bgAlpha, 0f, Vector2.Zero, SpriteEffects.None, 0f);
+            bg.Draw(gameTime, spriteBatch);
+            //spriteBatch.Draw(bgTexture, new Rectangle(0, 0, RainDropsGame.ScreenWidth, RainDropsGame.ScreenHeight), null, bgColor*bgAlpha, 0f, Vector2.Zero, SpriteEffects.None, 0f);
             //Draw ph bar
             spriteBatch.Draw(phBarTexture, new Rectangle(0, RainDropsGame.ScreenHeight - phBarHeight, RainDropsGame.ScreenWidth, phBarHeight), null, Color.White, 0f, Vector2.Zero, SpriteEffects.None, 0.9f);
             //Draw rain emitter
@@ -745,6 +777,7 @@ namespace RainDrops.States
             {
                 sprite.Draw(gameTime, spriteBatch);
             }
+            startButton.Draw(gameTime, spriteBatch);
             //Draw Components
             foreach (var button in buttons)
             {

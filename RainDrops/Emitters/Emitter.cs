@@ -11,12 +11,12 @@ namespace RainDrops.Emitters
 {
     internal abstract class Emitter : Component
     {
-        private float generateTimer;
+        protected float generateTimer;
         protected Sprite particlePrefab;
-        protected List<Sprite> particles;
+        public List<Sprite> particles;
 
-        public float GenerateSpeed = 10f;
-        public int MaxParticles = 150;
+        public float GenerateSpeed { get; set; }
+        public int MaxParticles { get; set; }
 
         public Emitter(Sprite sprite)
         {
@@ -33,34 +33,21 @@ namespace RainDrops.Emitters
             {
                 particle.Update(gameTime);
             }
-
-            RemoveParticles();
         }
 
-        private void RemoveParticles()
-        {
-            for (int i = 0; i < particles.Count; i++)
-            {
-                if (particles[i].IsRemoved)
-                {
-                    particles.RemoveAt(i);
-                    i--;
-                }
-            }
-        }
+        public abstract void RemoveParticles();
+        //{
+        //    for (int i = 0; i < particles.Count; i++)
+        //    {
+        //        if (particles[i].IsRemoved)
+        //        {
+        //            particles.RemoveAt(i);
+        //            i--;
+        //        }
+        //    }
+        //}
 
-        private void AddParticle()
-        {
-            if (generateTimer > GenerateSpeed)
-            {
-                generateTimer = 0;
-
-                if (particles.Count < MaxParticles)
-                {
-                    particles.Add(GenerateParticle());
-                }
-            }
-        }
+        protected abstract void AddParticle();
 
         protected abstract Sprite GenerateParticle();
 

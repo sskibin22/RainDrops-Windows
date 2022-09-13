@@ -18,7 +18,7 @@ namespace RainDrops.Sprites
         public override void Update(GameTime gameTime)
         {
             Position += Velocity;
-            if (Rect.Top > RainDropsGame.ScreenHeight - GameState.phBarHeight)
+            if (Rect.Top > RainDropsGame.ScreenHeight)
             {
                 IsRemoved = true;
             }

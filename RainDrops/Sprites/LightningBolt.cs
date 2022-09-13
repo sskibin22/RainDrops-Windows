@@ -40,19 +40,19 @@ namespace RainDrops.Sprites
                     flashTimer = 0;
                     if (lightFlag)
                     {
-                        GameState.bgAlpha = 0.3f;
+                        GameState.bg.ChangeOpacity(0.3f);
                         lightFlag = false;
                     }
                     else
                     {
-                        GameState.bgAlpha = 1f;
+                        GameState.bg.ChangeOpacity(1f);
                         lightFlag = true;
                     }  
                 }
                 if (_animationManager.PlayOnce(_animations["default"], gameTime))
                 {
                     IsActive = false;
-                    GameState.bgAlpha = 1f;
+                    GameState.bg.ChangeOpacity(1f);
                     lightFlag = true;
                     flashTimer = 0f;
                 }

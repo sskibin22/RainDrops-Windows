@@ -40,7 +40,6 @@ namespace RainDrops.Managers
 
             if (Level >= 1 && Level <= 5) 
             {
-                //_catchCount = 30;
                 //_dropSpawnRate = 80f;
                 //_dropSpeedMin = 0.003;
                 //_dropSpeedMax = 0.008;
@@ -55,8 +54,7 @@ namespace RainDrops.Managers
                 //acidDropChanceMod = (-1) * rainDropChanceMod / 2;
                 //alkDropChanceMod = (-1) * rainDropChanceMod / 2;
 
-                //_catchCount = 10;
-                _dropSpawnRate = 350f;
+                _dropSpawnRate = 350f; //350f
                 _dropSpeedMin = 0.001;
                 _dropSpeedMax = 0.003;
                 _rainDropChance = 20;

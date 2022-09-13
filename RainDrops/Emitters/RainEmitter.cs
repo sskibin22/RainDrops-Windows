@@ -13,7 +13,35 @@ namespace RainDrops.Emitters
     {
         public RainEmitter(Sprite sprite) : base(sprite)
         {
+            GenerateSpeed = 10f;
+            MaxParticles = 150;
+    }
+
+        public override void RemoveParticles()
+        {
+            for (int i = 0; i < particles.Count; i++)
+            {
+                if (particles[i].IsRemoved)
+                {
+                    particles.RemoveAt(i);
+                    i--;
+                }
+            }
         }
+
+        protected override void AddParticle()
+        {
+            if (generateTimer > GenerateSpeed)
+            {
+                generateTimer = 0;
+
+                if (particles.Count < MaxParticles)
+                {
+                    particles.Add(GenerateParticle());
+                }
+            }
+        }
+
         protected override Sprite GenerateParticle()
         {
             var rain = particlePrefab.Clone() as Rain;

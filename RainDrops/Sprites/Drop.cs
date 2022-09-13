@@ -14,46 +14,28 @@ namespace RainDrops.Sprites
     {
         public int PH { get; protected set; }
         public float DropSpeed { get; set; }
-        protected int animationNum;
-        protected List<string> animationKeys = new() { "rainDrop", "acidDrop", "alkDrop"};
+        public bool IsGlowing { get; protected set; }
+
         protected Drop(Dictionary<string, Animation> animations) : base(animations)
         {
             Layer = 0.85f;
+            Scale = GameState.dropScale;
 
         }
 
         public override void Update(GameTime gameTime)
+        {    
+            UpdateAnimation(gameTime);
+            Move(gameTime);
+            RemoveDrop();
+        }
+        protected void Move(GameTime gameTime)
         {
-            if(PH == 0)
-            {
-                _animationManager.Play(_animations["acidGlow"]);
-            }
-            else if(PH == 14)
-            {
-                _animationManager.Play(_animations["alkGlow"]);
-            }
-            else
-            {
-                _animationManager.Play(_animations[animationKeys[animationNum]]);
-            }
-            _animationManager.Update(gameTime);
-            
             Velocity.Y += (DropSpeed * (float)gameTime.ElapsedGameTime.TotalMilliseconds);
             Position += Velocity;
-
-            if (Rect.Bottom >= RainDropsGame.ScreenHeight)
-            {
-                IsRemoved = true;
-                GameState.dropCount--;
-                if(PH == 7)
-                {
-                    GameState.lifeCount--;
-                    GameState.statManager.IncreaseMissedDropTotal();
-                    if(GameState.lifeCount >= 0)
-                        GameState.lives[GameState.lifeCount].IsRemoved = true;
-                }
-            }      
         }
+        protected abstract void UpdateAnimation(GameTime gameTime);
+        protected abstract void RemoveDrop();
         public bool IsCupCollision(Cup cup)
         {
             return Rect.Bottom > cup.Rect.Top + 10 &&

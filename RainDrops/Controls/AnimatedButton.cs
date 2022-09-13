@@ -15,8 +15,10 @@ namespace RainDrops.Controls
         private Animation _animation;
         private bool _isHovering;
         private float timer;
+        private float playTimer;
         public EventHandler Click;
         public bool IsActive { get; set; }
+        public bool Play { get; set; }
         public bool Clicked { get; private set; }
         public float Opacity { get; set; }
         public float Rotation { get; set; }
@@ -36,7 +38,9 @@ namespace RainDrops.Controls
         {
             _animation = animation;
             timer = 0f;
+            playTimer = 0f;
             IsActive = true;
+            Play = false;
             Clicked = false;
             Opacity = 1f;
             Rotation = 0f;
@@ -44,33 +48,57 @@ namespace RainDrops.Controls
             Layer = 1f;
             Origin = new Vector2(_animation.FrameWidth / 2, _animation.FrameHeight / 2);
         }
+        public void Reset()
+        {
+            playTimer = 0f;
+            timer = 0f;
+            IsActive = true;
+            Clicked = false;
+        }
 
         public override void Update(GameTime gameTime)
         {
-            if (Clicked)
+            if (IsActive)
             {
-                timer += (float)gameTime.ElapsedGameTime.TotalMilliseconds;
-            }
-            var mouseRectangle = new Rectangle((int)RainDropsGame.scaledMouse.X, (int)RainDropsGame.scaledMouse.Y, 1, 1);
-
-            _isHovering = false;
-
-            if (mouseRectangle.Intersects(Rectangle))
-            {
-                _isHovering = true;
-                if (RainDropsGame.mouseState.LeftButton == ButtonState.Released)
+                if (Play)
                 {
-                    _animation.CurrentFrame = 0;
+                    playTimer += (float)gameTime.ElapsedGameTime.TotalMilliseconds;
+                    if (playTimer > _animation.FrameSpeed)
+                    {
+                        playTimer = 0f;
+                        _animation.CurrentFrame++;
+                        if (_animation.CurrentFrame >= _animation.FrameCount)
+                        {
+                            _animation.CurrentFrame = 0;
+                        }
+                    }
                 }
-                if (RainDropsGame.prevMouseState.LeftButton == ButtonState.Pressed)
+             
+                if (Clicked)
                 {
-                    Clicked = true;
-                    _animation.CurrentFrame = _animation.FrameCount-1;
+                    timer += (float)gameTime.ElapsedGameTime.TotalMilliseconds;
                 }
-            }
-            if (Clicked && timer > 250f)
-            {
-                Click?.Invoke(this, new EventArgs());
+                var mouseRectangle = new Rectangle((int)RainDropsGame.scaledMouse.X, (int)RainDropsGame.scaledMouse.Y, 1, 1);
+
+                _isHovering = false;
+
+                if (mouseRectangle.Intersects(Rectangle))
+                {
+                    _isHovering = true;
+                    if (RainDropsGame.mouseState.LeftButton == ButtonState.Released)
+                    {
+                        _animation.CurrentFrame = 0;
+                    }
+                    if (RainDropsGame.prevMouseState.LeftButton == ButtonState.Pressed)
+                    {
+                        Clicked = true;
+                        _animation.CurrentFrame = _animation.FrameCount - 1;
+                    }
+                }
+                if (Clicked && timer > 250f)
+                {
+                    Click?.Invoke(this, new EventArgs());
+                }
             }
         }
 

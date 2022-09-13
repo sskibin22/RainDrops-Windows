@@ -73,6 +73,18 @@
 /processorParam:TextureFormat=Color
 /build:../../../TextSprites/TWOtext.png;Floaters/Text/TWOtext.png
 
+#begin BackGrounds/GrassyNightBG.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:BackGrounds/GrassyNightBG.png
+
 #begin BackGrounds/MenuBG.png
 /importer:TextureImporter
 /processor:TextureProcessor
@@ -96,6 +108,18 @@
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
 /build:BackGrounds/MountainsBG2.png
+
+#begin BackGrounds/Savana/savanaBG.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:BackGrounds/Savana/savanaBG.png
 
 #begin Cups/StandardCup/SplashAnimations/SplashAnimation_0.png
 /importer:TextureImporter
@@ -752,6 +776,30 @@
 /processorParam:TextureFormat=Color
 /build:TextSprites/ONEtext.png
 
+#begin TextSprites/RainDropsStartPacked.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:TextSprites/RainDropsStartPacked.png
+
+#begin TextSprites/RainDropsTitle.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:TextSprites/RainDropsTitle.png
+
 #begin TextSprites/RAINtext.png
 /importer:TextureImporter
 /processor:TextureProcessor
@@ -788,6 +836,18 @@
 /processorParam:TextureFormat=Color
 /build:TextSprites/TWOtext.png
 
+#begin UI/Buttons/helpButton.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:UI/Buttons/helpButton.png
+
 #begin UI/Buttons/playAgainButton.png
 /importer:TextureImporter
 /processor:TextureProcessor
@@ -800,6 +860,18 @@
 /processorParam:TextureFormat=Color
 /build:UI/Buttons/playAgainButton.png
 
+#begin UI/Buttons/playButton.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:UI/Buttons/playButton.png
+
 #begin UI/Buttons/quitButton.png
 /importer:TextureImporter
 /processor:TextureProcessor
@@ -811,6 +883,42 @@
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
 /build:UI/Buttons/quitButton.png
+
+#begin UI/Buttons/quitGameButton.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:UI/Buttons/quitGameButton.png
+
+#begin UI/Buttons/startButton.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:UI/Buttons/startButton.png
+
+#begin UI/Buttons/statsButton.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:UI/Buttons/statsButton.png
 
 #begin UI/Panels/gameOverBG.png
 /importer:TextureImporter
