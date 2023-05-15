@@ -15,6 +15,7 @@ namespace RainDrops.Sprites
         public bool IsActive { get; set; }
         private bool lightFlag;
         private float flashTimer;
+        public bool cupShielded = false;
         public LightningBolt(Dictionary<string, Animation> animations) : base(animations)
         {
             Origin = new Vector2(_animationManager.CurrentAnimation.FrameWidth / 2, _animationManager.CurrentAnimation.FrameHeight);
@@ -34,6 +35,14 @@ namespace RainDrops.Sprites
         {
             if (IsActive)
             {
+                if(cupShielded)
+                {
+                    Y = GameState.cup.Y - (GameState.cup.Rect.Height / 2) - 50;
+                }
+                else
+                {
+                    Y = RainDropsGame.ScreenHeight - GameState.phBarHeight - GameState.cupHeight / 2;
+                }
                 flashTimer += (float)gameTime.ElapsedGameTime.TotalMilliseconds;
                 if(flashTimer > 83.335f)
                 {

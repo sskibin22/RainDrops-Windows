@@ -40,6 +40,8 @@ namespace RainDrops.States
         public static float bgAlpha = 1f;
         public static float dropScale = 0.9f;
         public static int rainDropCount = 0;
+
+        public static List<Color> sparkColors;
         #endregion
 
         #region Private Lists
@@ -68,6 +70,7 @@ namespace RainDrops.States
         private double rainDropChance; 
         private double acidDropChance;
         private double alkDropChance;
+        private double powerUpChance;
 
         /* Timers */
         private float timer = 0;
@@ -91,6 +94,7 @@ namespace RainDrops.States
         private Texture2D alkGlowTexture;
         private Texture2D playAgainButtonTexture;
         private Texture2D quitButtonTexture;
+        private Texture2D lightningShieldTexture;
         #endregion
 
         #region Animation Dictionaries
@@ -100,6 +104,7 @@ namespace RainDrops.States
         #region Animations
         private Animation acidIndAnimation;
         private Animation alkIndAnimation;
+        private Animation lightningShieldIndAnimation;
         #endregion
 
         #region Global Static Sprites
@@ -119,32 +124,31 @@ namespace RainDrops.States
         private GameOverPrompt gameOverPrompt; 
         private GameOverText gameOverText;
         private LightningBall lightningBall;
-        private LightningBolt lightningBolt;
+        static public LightningBolt lightningBolt;
         #endregion
 
         #region Private Buttons
         AnimatedButton startButton;
         #endregion
 
-        #region Public Static Managers
+        #region Managers
         public static StatManager statManager;
+        public static DeBuffManager deBuffManager;
         #endregion
 
-        #region Private Managers
-        private DeBuffManager deBuffManager;
+        #region Events
+        static public LightningEvent lightningEvent;
         #endregion
 
-        #region Private Events
-        private LightningEvent lightningEvent;
-        #endregion
-
-        #region Private Emitters
+        #region Emitters
         private RainEmitter rainEmitter;
+        static public SparksEmitter sparksEmitter;
         #endregion
 
         #region UI States
         private KeyboardState currKeyState;
         private KeyboardState previousKeyState;
+        internal static object lightingEvent;
         #endregion
 
         #region GameState Contructor
@@ -163,6 +167,7 @@ namespace RainDrops.States
             rainDropChance = RainDropsGame.levelManager._rainDropChance;
             acidDropChance = RainDropsGame.levelManager._acidDropChance;
             alkDropChance = RainDropsGame.levelManager._alkDropChance;
+            powerUpChance = RainDropsGame.levelManager._powerUpChance;
         }
         /* Increases difficulty settings by given level manager difficulty modifier variables */
         public void ModifyLevelDifficulty()
@@ -222,10 +227,12 @@ namespace RainDrops.States
             standardCupTexture = _content.Load<Texture2D>("Cups/StandardCup/StandardCupStates/standardCup7");
             playAgainButtonTexture = _content.Load<Texture2D>("UI/Buttons/playAgainButton");
             quitButtonTexture = _content.Load<Texture2D>("UI/Buttons/quitButton");
+            lightningShieldTexture = _content.Load<Texture2D>("Drops/PowerUps/lightningShield");
 
             /* Instantiate Animations */
             acidIndAnimation = new Animation(_content.Load<Texture2D>("Floaters/IndicatorSprites/acidDebuff"), 12) { FrameSpeed = animationFrameSpeed };
             alkIndAnimation = new Animation(_content.Load<Texture2D>("Floaters/IndicatorSprites/alkDebuff"), 24) { FrameSpeed = animationFrameSpeed };
+            lightningShieldIndAnimation = new Animation(lightningShieldTexture, 3) { FrameSpeed = animationFrameSpeed };
 
             /* Instantiate Animation Dictionaries */
 
@@ -347,7 +354,8 @@ namespace RainDrops.States
             debuffIndicators = new List<DebuffIndicator>()
             {
                 new DebuffIndicator(new Dictionary<string, Animation>(){{"default", acidIndAnimation } }){Position = new Vector2(acidIndAnimation.FrameWidth*deBuffScale, RainDropsGame.ScreenHeight-phBarHeight-(acidIndAnimation.FrameHeight*deBuffScale)/2), Scale = deBuffScale, Layer = 1f},
-                new DebuffIndicator(new Dictionary<string, Animation>(){{"default", alkIndAnimation } }){Position = new Vector2(alkIndAnimation.FrameWidth*deBuffScale, RainDropsGame.ScreenHeight-phBarHeight-(alkIndAnimation.FrameHeight*deBuffScale)/2), Scale = deBuffScale, Layer = 1f}
+                new DebuffIndicator(new Dictionary<string, Animation>(){{"default", alkIndAnimation } }){Position = new Vector2(alkIndAnimation.FrameWidth*deBuffScale, RainDropsGame.ScreenHeight-phBarHeight-(alkIndAnimation.FrameHeight*deBuffScale)/2), Scale = deBuffScale, Layer = 1f},
+                new DebuffIndicator(new Dictionary<string, Animation>(){{"default", lightningShieldIndAnimation } }){Position = new Vector2(lightningShieldIndAnimation.FrameWidth*2, RainDropsGame.ScreenHeight-phBarHeight-(lightningShieldIndAnimation.FrameHeight)/2), Scale = 1f, Layer = 1f}
             };
             countDown = new CountDown(startDict);
 
@@ -363,6 +371,11 @@ namespace RainDrops.States
 
             /* Instantiate Emitters */
             rainEmitter = new RainEmitter(new Rain(_content.Load<Texture2D>("EmitterSprites/rain_1")));
+            sparksEmitter = new SparksEmitter(new Spark(_content.Load<Texture2D>("EmitterSprites/spark")));
+            sparkColors = new List<Color>()
+            {
+                Color.Yellow, Color.Orange, Color.White, Color.LightYellow
+            };
 
             /* Load Initial Game settings */
             UpdateDifficulty(); //set initial difficulty settings
@@ -417,6 +430,7 @@ namespace RainDrops.States
             dropCount = 0;
             phSelect.Reset();
             cup.Reset();
+            cup.lightningShield = false;
             countDown.Reset();
             deBuffManager.Reset();
             lightningEvent.Stop();
@@ -463,6 +477,7 @@ namespace RainDrops.States
                 cloud4,
                 debuffIndicators[0],
                 debuffIndicators[1],
+                debuffIndicators[2],
                 gameOverText
             };
 
@@ -512,7 +527,7 @@ namespace RainDrops.States
                     }
                 }
 
-                /* Randomly spawn euither a rain drop, acid drop, or alkaline drop based on drop chances for each. 
+                /* Randomly spawn either a rain drop, acid drop, or alkaline drop based on drop chances for each. 
                  * Apply attributes randomly selected above.
                  */
                 WeightedRandomExecutor wre = new WeightedRandomExecutor(
@@ -542,7 +557,15 @@ namespace RainDrops.States
                 {
                     Position = new Vector2(dropCols[randCol], scaledDropFrameHeight / 2),
                     DropSpeed = randDropSpeed,
-                }, alkDropChance));
+                }, alkDropChance),
+                new WeightedRandomParam(() => currDrop = new PowerUp(new Dictionary<string, Animation>()
+                {
+                    {"lightningShield", new Animation(lightningShieldTexture, 3){ FrameSpeed = animationFrameSpeed } }
+                })
+                {
+                    Position = new Vector2(dropCols[randCol], scaledDropFrameHeight / 2),
+                    DropSpeed = randDropSpeed,
+                }, powerUpChance));
                 wre.Execute();
 
                 if (dropCount < maxDrops)
@@ -607,6 +630,15 @@ namespace RainDrops.States
                         sprite.IsRemoved = true;
                         MovePHSelector(alkDrop);
                         deBuffManager.ChangeState(phSelect);
+                    }
+                    if (drop.IsCupCollision(cup) && sprite is PowerUp)
+                    {
+                        //TODO: PowerUp events
+                        var powerUp = sprite as PowerUp;
+                        cup.lightningShield = true;
+                        deBuffManager.ActivateLightningShieldBuff();
+                        dropCount--;
+                        sprite.IsRemoved = true;
                     }
                 }
             }
@@ -748,6 +780,8 @@ namespace RainDrops.States
                     lightningEvent.Stop();
                 }
             }
+            sparksEmitter.Update(gameTime);
+            sparksEmitter.RemoveParticles();
             SpawnDrops(gameTime);
             
             /* If player loses all lives reset difficulty and game. */
@@ -772,6 +806,7 @@ namespace RainDrops.States
             spriteBatch.Draw(phBarTexture, new Rectangle(0, RainDropsGame.ScreenHeight - phBarHeight, RainDropsGame.ScreenWidth, phBarHeight), null, Color.White, 0f, Vector2.Zero, SpriteEffects.None, 0.9f);
             //Draw rain emitter
             rainEmitter.Draw(gameTime, spriteBatch);
+            sparksEmitter.Draw(gameTime, spriteBatch);
             //Draw all sprites and show their hitboxes if showHitBox is set to true
             foreach (var sprite in sprites)
             {

@@ -15,6 +15,7 @@ namespace RainDrops.Emitters
         {
             GenerateSpeed = 10f;
             MaxParticles = 150;
+            isActive = true;
     }
 
         public override void RemoveParticles()

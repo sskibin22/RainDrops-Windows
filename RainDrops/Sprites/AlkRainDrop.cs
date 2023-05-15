@@ -20,6 +20,11 @@ namespace RainDrops.Sprites
                 new WeightedRandomParam(() => { IsGlowing = false; PH = 11; }, 80));   // 80% chance for PH to be 11
             wre.Execute();
         }
+        protected override void Move(GameTime gameTime)
+        {
+            Velocity.Y += (DropSpeed * (float)gameTime.ElapsedGameTime.TotalMilliseconds);
+            Position += Velocity;
+        }
         protected override void UpdateAnimation(GameTime gameTime)
         {
             if (IsGlowing)

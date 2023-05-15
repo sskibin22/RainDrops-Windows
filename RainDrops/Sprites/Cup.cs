@@ -15,6 +15,7 @@ namespace RainDrops.Sprites
     {
         public bool splashing = false;
         public bool acid = false;
+        public bool lightningShield = false;
         public int dropCount;
 
         private float stunTimer;
@@ -51,7 +52,7 @@ namespace RainDrops.Sprites
 
         public override void Update(GameTime gameTime)
         {
-            if (stunned)
+            if(stunned)
             {
                 if (flag)
                 {
@@ -71,6 +72,7 @@ namespace RainDrops.Sprites
                     stunTimer = 0;
                 }
             }
+
             Move();
             if (!splashing)
             {
@@ -120,7 +122,18 @@ namespace RainDrops.Sprites
         {
             if(_animationManager.PlayOnceBackwards(_animations["defaultWater"], gameTime))
             {
-                Reset();
+                if(_texture == _textures["defaultCup"])
+                {
+                    Reset();
+                }
+                else
+                {
+                    stunned = false;
+                    stunTimer = 0f;
+                    dropCount = 0;
+                    _animations["defaultWater"].CurrentFrame = 0;
+                    _animationManager.SetAnimation(_animations["defaultWater"]);
+                }
                 GameState.emptyingCup = false;
                 return true;
             }
@@ -167,6 +180,7 @@ namespace RainDrops.Sprites
         public void Reset()
         {
             stunned = false;
+            //lightningShield = false;
             stunTimer = 0f;
             dropCount = 0;
             _texture = _textures["defaultCup"];

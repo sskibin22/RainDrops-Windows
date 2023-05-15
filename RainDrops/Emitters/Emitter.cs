@@ -14,6 +14,7 @@ namespace RainDrops.Emitters
         protected float generateTimer;
         protected Sprite particlePrefab;
         public List<Sprite> particles;
+        public bool isActive = false;
 
         public float GenerateSpeed { get; set; }
         public int MaxParticles { get; set; }
@@ -26,8 +27,11 @@ namespace RainDrops.Emitters
 
         public override void Update(GameTime gameTime)
         {
-            generateTimer += (float)gameTime.ElapsedGameTime.TotalMilliseconds;
-            AddParticle();
+            if (isActive)
+            {
+                generateTimer += (float)gameTime.ElapsedGameTime.TotalMilliseconds;
+                AddParticle();
+            }
 
             foreach (var particle in particles)
             {
@@ -57,7 +61,7 @@ namespace RainDrops.Emitters
             foreach (var particle in particles)
             {
                 particle.Draw(gameTime, spriteBatch);
-            }
+            }   
         }
     }
 }

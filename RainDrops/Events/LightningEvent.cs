@@ -1,6 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using RainDrops.Sprites;
+using RainDrops.States;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,6 +19,7 @@ namespace RainDrops.Events
         private float ballTimer;
         private int boltLimit;
         private int start;
+        private bool shieldUsed = false;
 
         public LightningEvent(LightningBolt lightningBolt, LightningBall lightningBall)
         {
@@ -68,13 +70,40 @@ namespace RainDrops.Events
                     _lightningBolt.Update(gameTime);
                     if (_lightningBall.Rect.Intersects(cup.Rect))
                     {
-                        cup.Stun();
+                        if (cup.lightningShield)
+                        {
+                            _lightningBolt.cupShielded = true;
+                            GameState.sparksEmitter.isActive = true;
+                            shieldUsed = true;
+                            //cup.lightningShield = false;
+                        }
+                        else
+                        {
+                            _lightningBolt.cupShielded = false;
+                            cup.Stun();
+                        }
+                    }
+                    else
+                    {
+                        GameState.sparksEmitter.isActive = false;
+                        _lightningBolt.cupShielded = false;
                     }
                     if (_lightningBolt.IsActive == false)
                     {
+                        if (shieldUsed)
+                        {
+                            shieldUsed = false;
+                            cup.lightningShield = false;
+                            GameState.deBuffManager.DeactivateLightningShieldBuff();
+                        }
+                        GameState.sparksEmitter.isActive = false;
                         EventActive = false;
                     }
                 }
+            }
+            else
+            {
+                GameState.sparksEmitter.isActive = false;
             }
 
         }

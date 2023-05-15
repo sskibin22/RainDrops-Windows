@@ -20,7 +20,6 @@ namespace RainDrops.Sprites
         {
             Layer = 0.85f;
             Scale = GameState.dropScale;
-
         }
 
         public override void Update(GameTime gameTime)
@@ -29,11 +28,7 @@ namespace RainDrops.Sprites
             Move(gameTime);
             RemoveDrop();
         }
-        protected void Move(GameTime gameTime)
-        {
-            Velocity.Y += (DropSpeed * (float)gameTime.ElapsedGameTime.TotalMilliseconds);
-            Position += Velocity;
-        }
+        protected abstract void Move(GameTime gameTime);
         protected abstract void UpdateAnimation(GameTime gameTime);
         protected abstract void RemoveDrop();
         public bool IsCupCollision(Cup cup)

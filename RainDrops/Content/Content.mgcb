@@ -673,6 +673,18 @@
 /processorParam:TextureFormat=Color
 /build:Drops/glowPurpleSS.png
 
+#begin Drops/PowerUps/lightningShield.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:Drops/PowerUps/lightningShield.png
+
 #begin EmitterSprites/rain_1.png
 /importer:TextureImporter
 /processor:TextureProcessor
@@ -684,6 +696,18 @@
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
 /build:EmitterSprites/rain_1.png
+
+#begin EmitterSprites/spark.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:EmitterSprites/spark.png
 
 #begin Events/LightningEvent/lightningBall.png
 /importer:TextureImporter

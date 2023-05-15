@@ -16,6 +16,7 @@ namespace RainDrops.Managers
         public double _rainDropChance;
         public double _acidDropChance;
         public double _alkDropChance;
+        public double _powerUpChance = 2;
 
         public float dropSpawnRateMod;
         public double dropSpeedMinMod;
@@ -57,9 +58,9 @@ namespace RainDrops.Managers
                 _dropSpawnRate = 350f; //350f
                 _dropSpeedMin = 0.001;
                 _dropSpeedMax = 0.003;
-                _rainDropChance = 20;
-                _acidDropChance = 40;
-                _alkDropChance = 40;
+                _rainDropChance = 20 - (_powerUpChance / 3);
+                _acidDropChance = 40 - (_powerUpChance / 3);
+                _alkDropChance = 40 - (_powerUpChance / 3);
 
                 dropSpawnRateMod = -10f;
                 dropSpeedMinMod = 0.0002;
@@ -74,9 +75,9 @@ namespace RainDrops.Managers
                 _dropSpawnRate = 300f;
                 _dropSpeedMin = 0.001;
                 _dropSpeedMax = 0.004;
-                _rainDropChance = 15;
-                _acidDropChance = 42.5;
-                _alkDropChance = 42.5;
+                _rainDropChance = 15 - (_powerUpChance / 3);
+                _acidDropChance = 42.5 - (_powerUpChance / 3);
+                _alkDropChance = 42.5 - (_powerUpChance / 3);
 
                 dropSpawnRateMod = -10f;
                 dropSpeedMinMod = 0.0002;
@@ -91,9 +92,9 @@ namespace RainDrops.Managers
                 _dropSpawnRate = 250f;
                 _dropSpeedMin = 0.001;
                 _dropSpeedMax = 0.005;
-                _rainDropChance = 12;
-                _acidDropChance = 44;
-                _alkDropChance = 44;
+                _rainDropChance = 12 - (_powerUpChance / 3);
+                _acidDropChance = 44 - (_powerUpChance / 3);
+                _alkDropChance = 44 - (_powerUpChance / 3);
 
                 dropSpawnRateMod = -10f;
                 dropSpeedMinMod = 0.0002;
@@ -108,9 +109,9 @@ namespace RainDrops.Managers
                 _dropSpawnRate = 200f;
                 _dropSpeedMin = 0.001;
                 _dropSpeedMax = 0.006;
-                _rainDropChance = 10;
-                _acidDropChance = 45;
-                _alkDropChance = 45;
+                _rainDropChance = 10 - (_powerUpChance / 3);
+                _acidDropChance = 45 - (_powerUpChance / 3);
+                _alkDropChance = 45 - (_powerUpChance / 3);
 
                 dropSpawnRateMod = -10f;
                 dropSpeedMinMod = 0.0002;

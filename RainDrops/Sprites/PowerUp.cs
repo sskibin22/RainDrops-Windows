@@ -1,20 +1,20 @@
-﻿using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
+﻿using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework;
 using RainDrops.Models;
-using RainDrops.States;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using RainDrops.States;
 
 namespace RainDrops.Sprites
 {
-    internal class RainDrop : Drop
+    internal class PowerUp : Drop
     {
-        public RainDrop(Dictionary<string, Animation> animations) : base(animations)
+        public PowerUp(Dictionary<string, Animation> animations) : base(animations)
         {
-            PH = 7;
+            PH = -1;
             IsGlowing = false;
         }
         protected override void Move(GameTime gameTime)
@@ -24,7 +24,7 @@ namespace RainDrops.Sprites
         }
         protected override void UpdateAnimation(GameTime gameTime)
         {
-            _animationManager.Play(_animations["standardRain"]);
+            _animationManager.Play(_animations["lightningShield"]);
             _animationManager.Update(gameTime);
         }
         protected override void RemoveDrop()
@@ -32,16 +32,7 @@ namespace RainDrops.Sprites
             if (Rect.Bottom >= RainDropsGame.ScreenHeight)
             {
                 IsRemoved = true;
-                GameState.rainDropCount--;
-                GameState.dropCount--;
-                GameState.lifeCount--;
-                GameState.statManager.IncreaseMissedDropTotal();
-                if (GameState.lifeCount >= 0)
-                    GameState.lives[GameState.lifeCount].IsRemoved = true;
             }
-            
         }
-
-
     }
 }

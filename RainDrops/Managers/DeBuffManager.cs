@@ -108,9 +108,23 @@ namespace RainDrops.Managers
             }
             else
             {
-                Reset();
+                acidTimer = 0;
+                acidDebuff = false;
+                alkDebuff = false;
+                missChance = 50;
+                spillRate = 2000;
+                _indicators[0].isActive = false;
+                _indicators[1].isActive = false;
                 _cup.TextureTo("defaultCup");
             }
+        }
+        public void ActivateLightningShieldBuff()
+        {
+            _indicators[2].isActive = true;
+        }
+        public void DeactivateLightningShieldBuff()
+        {
+            _indicators[2].isActive = false;
         }
         public void AcidDeBuffActive(GameTime gameTime)
         {
@@ -151,6 +165,7 @@ namespace RainDrops.Managers
             spillRate = 2000;
             _indicators[0].isActive = false;
             _indicators[1].isActive = false;
+            _indicators[2].isActive = false;
         }
 
 
